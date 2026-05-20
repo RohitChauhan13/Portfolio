@@ -3,6 +3,7 @@
 import { MouseEvent, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import { deleteRow } from "@/app/actions";
+import { AppLoader } from "@/components/app-loader";
 
 export function DeleteButton({ table, id, label = "item" }: { table: string; id: string; label?: string }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,6 +49,7 @@ export function DeleteButton({ table, id, label = "item" }: { table: string; id:
 
   return (
     <>
+      {isDeleting && <AppLoader />}
       <form ref={formRef} action={deleteRow} className="inline-block">
         <input type="hidden" name="table" value={table} />
         <input type="hidden" name="id" value={id} />

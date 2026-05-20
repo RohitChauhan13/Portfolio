@@ -1,5 +1,6 @@
 import { markMessageRead, saveAchievement, saveEducation, saveExperience, saveProfile, saveProject, saveSkill } from "@/app/actions";
 import { DeleteButton } from "./delete-button";
+import { PendingSubmitButton } from "./pending-submit-button";
 
 export { DeleteButton };
 
@@ -66,7 +67,9 @@ export function ProfileForm({ row }: { row?: Row }) {
         <Field name="open_to" label="Open to" row={row} />
       </div>
       <div>
-        <button className="h-10 rounded-md bg-primary px-4 text-sm font-black text-button-text">Save profile</button>
+        <PendingSubmitButton className="h-10 rounded-md bg-primary px-4 text-sm font-black text-button-text disabled:cursor-not-allowed disabled:opacity-70" pendingChildren="Saving">
+          Save profile
+        </PendingSubmitButton>
       </div>
     </form>
   );
@@ -141,7 +144,9 @@ export function MessageActions({ id, readAt }: { id: string; readAt: string | nu
       {!readAt && (
         <form action={markMessageRead}>
           <input type="hidden" name="id" value={id} />
-          <button className="h-9 rounded-md bg-primary px-3 text-xs font-black text-button-text">Mark read</button>
+          <PendingSubmitButton className="h-9 rounded-md bg-primary px-3 text-xs font-black text-button-text disabled:cursor-not-allowed disabled:opacity-70" pendingChildren="Saving">
+            Mark read
+          </PendingSubmitButton>
         </form>
       )}
       <DeleteButton table="contact_messages" id={id} label="message" />
@@ -191,7 +196,9 @@ function AdminTail({ row, featured = true, currentName = "is_featured", currentL
           Visible on site
         </label>
       )}
-      <button className="h-10 rounded-md bg-primary px-4 text-sm font-black text-button-text">Save</button>
+      <PendingSubmitButton className="h-10 rounded-md bg-primary px-4 text-sm font-black text-button-text disabled:cursor-not-allowed disabled:opacity-70" pendingChildren="Saving">
+        Save
+      </PendingSubmitButton>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { submitContact } from "@/app/actions";
+import { AppLoader } from "@/components/app-loader";
 
 export function ContactForm() {
   const [isPending, startTransition] = useTransition();
@@ -24,6 +25,7 @@ export function ContactForm() {
         });
       }}
     >
+      {isPending && <AppLoader />}
       <input className="hidden" name="company" tabIndex={-1} autoComplete="off" />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field name="name" label="Name" autoComplete="name" />
