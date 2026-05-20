@@ -5,13 +5,13 @@ import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasDatabaseEnv, query } from "@/lib/db";
 
 const cards = [
-  ["Profile", "/rohit/admin/profile", "Edit contact details, social links, headline, and Instagram."],
-  ["Projects", "/rohit/admin/projects", "Add case studies, production apps, links, and impact."],
-  ["Skills", "/rohit/admin/skills", "Edit skill groups, proficiency, and featured items."],
-  ["Experience", "/rohit/admin/experience", "Maintain company work, highlights, and tech stacks."],
-  ["Education", "/rohit/admin/education", "Update degree, grade, and academic proof."],
-  ["Achievements", "/rohit/admin/achievements", "Keep recruiter-facing proof fresh."],
-  ["Messages", "/rohit/admin/messages", "Read messages from the contact form."]
+  { title: "Profile", href: "/rohit/admin/profile", text: "Edit contact details, social links, headline, and Instagram.", countSql: "SELECT COUNT(*) AS count FROM profile" },
+  { title: "Projects", href: "/rohit/admin/projects", text: "Add case studies, production apps, links, and impact.", countSql: "SELECT COUNT(*) AS count FROM projects" },
+  { title: "Skills", href: "/rohit/admin/skills", text: "Edit skill groups, proficiency, and featured items.", countSql: "SELECT COUNT(*) AS count FROM skills" },
+  { title: "Experience", href: "/rohit/admin/experience", text: "Maintain company work, highlights, and tech stacks.", countSql: "SELECT COUNT(*) AS count FROM experience" },
+  { title: "Education", href: "/rohit/admin/education", text: "Update degree, grade, and academic proof.", countSql: "SELECT COUNT(*) AS count FROM education" },
+  { title: "Achievements", href: "/rohit/admin/achievements", text: "Keep recruiter-facing proof fresh.", countSql: "SELECT COUNT(*) AS count FROM achievements" },
+  { title: "Messages", href: "/rohit/admin/messages", text: "Unread messages from the contact form.", countSql: "SELECT COUNT(*) AS count FROM contact_messages WHERE read_at IS NULL" }
 ];
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -20,17 +20,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   if (!authed) return <AdminLogin error={error} />;
 
   const dbAvailable = hasDatabaseEnv();
-  const counts = dbAvailable
-    ? await Promise.all([
-        countRows("profile"),
-        countRows("projects"),
-        countRows("skills"),
-        countRows("experience"),
-        countRows("education"),
-        countRows("achievements"),
-        countRows("contact_messages")
-      ])
-    : [0, 0, 0, 0, 0, 0, 0];
+  const counts = dbAvailable ? await Promise.all(cards.map((card) => countRows(card.countSql))) : cards.map(() => 0);
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
@@ -57,7 +47,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </div>
         )}
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {cards.map(([title, href, text], index) => (
+          {cards.map(({ title, href, text }, index) => (
             <Link className="rounded-md border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-panel" href={href} key={href}>
               <p className="text-3xl font-black text-accent">{counts[index]}</p>
               <h2 className="mt-3 text-xl font-black text-primary">{title}</h2>
@@ -93,9 +83,9 @@ function AdminLogin({ error }: { error?: string }) {
   );
 }
 
-async function countRows(table: string) {
+async function countRows(sql: string) {
   try {
-    const { rows } = await query(`SELECT COUNT(*) AS count FROM ${table}`);
+    const { rows } = await query(sql);
     return Number(rows[0]?.count ?? 0);
   } catch {
     return 0;

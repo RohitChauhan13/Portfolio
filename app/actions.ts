@@ -41,6 +41,7 @@ export async function submitContact(formData: FormData) {
       "INSERT INTO contact_messages (name, email, subject, message, source) VALUES ($1, $2, $3, $4, $5)",
       [parsed.data.name, parsed.data.email, parsed.data.subject, parsed.data.message, "portfolio"]
     );
+    revalidateAdmin();
   }
 
   sendContactEmail(parsed.data).catch((error) => {
@@ -67,6 +68,11 @@ async function requireAdmin() {
   if (!(await isAdminAuthed())) throw new Error("Unauthorized");
   if (!hasDatabaseEnv()) throw new Error("DATABASE_URL environment variable is missing.");
   return true;
+}
+
+function revalidateAdmin() {
+  revalidatePath("/rohit/admin");
+  revalidatePath("/rohit/admin/messages");
 }
 
 export async function saveProject(formData: FormData) {
@@ -145,6 +151,7 @@ export async function saveProject(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/projects");
+  revalidateAdmin();
   redirect("/rohit/admin/projects");
 }
 
@@ -184,6 +191,7 @@ export async function saveProfile(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/projects");
+  revalidateAdmin();
   redirect("/rohit/admin/profile");
 }
 
@@ -207,6 +215,7 @@ export async function saveSkill(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidateAdmin();
   redirect("/rohit/admin/skills");
 }
 
@@ -241,6 +250,7 @@ export async function saveExperience(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidateAdmin();
   redirect("/rohit/admin/experience");
 }
 
@@ -272,6 +282,7 @@ export async function saveEducation(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidateAdmin();
   redirect("/rohit/admin/education");
 }
 
@@ -297,6 +308,7 @@ export async function saveAchievement(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidateAdmin();
   redirect("/rohit/admin/achievements");
 }
 
@@ -309,6 +321,7 @@ export async function deleteRow(formData: FormData) {
 
   await query(`DELETE FROM ${table} WHERE id = $1`, [id]);
   revalidatePath("/");
+  revalidateAdmin();
   redirect(`/rohit/admin/${table === "contact_messages" ? "messages" : table}`);
 }
 
@@ -317,5 +330,6 @@ export async function markMessageRead(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await query("UPDATE contact_messages SET read_at = $1 WHERE id = $2", [new Date().toISOString(), id]);
+  revalidateAdmin();
   redirect("/rohit/admin/messages");
 }
