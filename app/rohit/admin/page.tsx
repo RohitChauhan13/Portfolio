@@ -3,7 +3,7 @@ import { loginAdmin, logoutAdmin } from "@/app/actions";
 import { AdminCounts } from "@/components/admin-counts";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { isAdminAuthed } from "@/lib/admin-auth";
-import { hasDatabaseEnv } from "@/lib/db";
+import { hasDatabaseEnv, query } from "@/lib/db";
 
 const cards = [
   { key: "profile", title: "Profile", href: "/rohit/admin/profile", text: "Edit contact details, social links, headline, and Instagram." },
@@ -15,12 +15,23 @@ const cards = [
   { key: "messages", title: "Messages", href: "/rohit/admin/messages", text: "Unread messages from the contact form." }
 ];
 
+const countQueries = {
+  profile: "SELECT COUNT(*) AS count FROM profile",
+  projects: "SELECT COUNT(*) AS count FROM projects",
+  skills: "SELECT COUNT(*) AS count FROM skills",
+  experience: "SELECT COUNT(*) AS count FROM experience",
+  education: "SELECT COUNT(*) AS count FROM education",
+  achievements: "SELECT COUNT(*) AS count FROM achievements",
+  messages: "SELECT COUNT(*) AS count FROM contact_messages WHERE read_at IS NULL"
+} as const;
+
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const authed = await isAdminAuthed();
   const { error } = await searchParams;
   if (!authed) return <AdminLogin error={error} />;
 
   const dbAvailable = hasDatabaseEnv();
+  const counts = await loadAdminCounts(dbAvailable);
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
@@ -46,10 +57,28 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             DATABASE_URL is missing. Add it to `.env.local` before editing live data.
           </div>
         )}
-        <AdminCounts cards={cards} />
+        <AdminCounts cards={cards} counts={counts} />
       </div>
     </main>
   );
+}
+
+async function loadAdminCounts(dbAvailable: boolean) {
+  const emptyCounts = Object.fromEntries(Object.keys(countQueries).map((key) => [key, 0]));
+  if (!dbAvailable) return emptyCounts;
+
+  const entries = await Promise.all(
+    Object.entries(countQueries).map(async ([key, sql]) => {
+      try {
+        const { rows } = await query(sql);
+        return [key, Number(rows[0]?.count ?? 0)] as const;
+      } catch {
+        return [key, 0] as const;
+      }
+    })
+  );
+
+  return Object.fromEntries(entries);
 }
 
 function AdminLogin({ error }: { error?: string }) {

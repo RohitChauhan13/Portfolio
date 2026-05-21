@@ -1,5 +1,5 @@
 import "server-only";
-import { query } from "@/lib/db";
+import { hasDatabaseEnv, query } from "@/lib/db";
 import { achievements as fallbackAchievements, education as fallbackEducation, experience as fallbackExperience, profile as fallbackProfile, projects as fallbackProjects, skills as fallbackSkills } from "@/lib/fallback-data";
 import type { Achievement, Education, Experience, Profile, Project, Skill } from "@/lib/types";
 
@@ -28,6 +28,11 @@ function listFromValue(value: unknown) {
   return [];
 }
 
+function failDatabaseLoad(context: string, error: unknown): never {
+  console.error(`Failed to load ${context} from the database:`, error);
+  throw error;
+}
+
 function mapProject(row: Record<string, unknown>): Project {
   return {
     id: String(row.id),
@@ -52,10 +57,12 @@ function mapProject(row: Record<string, unknown>): Project {
 }
 
 export async function getProfile(): Promise<Profile> {
+  if (!hasDatabaseEnv()) return fallbackProfile;
+
   try {
     const { rows } = await query("SELECT * FROM profile LIMIT 1");
     const data = rows[0];
-    if (!data) return fallbackProfile;
+    if (!data) throw new Error("Profile row is missing");
 
     return {
       name: String(data.name ?? fallbackProfile.name),
@@ -72,12 +79,16 @@ export async function getProfile(): Promise<Profile> {
       avatarUrl: String(data.avatar_url ?? fallbackProfile.avatarUrl),
       openTo: String(data.open_to ?? fallbackProfile.openTo)
     };
-  } catch {
-    return fallbackProfile;
+  } catch (error) {
+    return failDatabaseLoad("profile", error);
   }
 }
 
 export async function getSkills(): Promise<Skill[]> {
+  if (!hasDatabaseEnv()) {
+    return uniqueBy(byOrder(fallbackSkills.filter((skill) => skill.isVisible)), (skill) => `${skill.category.trim().toLowerCase()}::${skill.name.trim().toLowerCase()}`);
+  }
+
   try {
     const { rows } = await query("SELECT * FROM skills WHERE is_visible = true ORDER BY sort_order ASC");
     const typedRows = rows as Record<string, unknown>[];
@@ -91,32 +102,40 @@ export async function getSkills(): Promise<Skill[]> {
       sortOrder: Number(row.sort_order ?? 0)
     }));
     return uniqueBy(mapped, (skill) => `${skill.category.trim().toLowerCase()}::${skill.name.trim().toLowerCase()}`);
-  } catch {
-    return uniqueBy(byOrder(fallbackSkills.filter((skill) => skill.isVisible)), (skill) => `${skill.category.trim().toLowerCase()}::${skill.name.trim().toLowerCase()}`);
+  } catch (error) {
+    return failDatabaseLoad("skills", error);
   }
 }
 
 export async function getProjects(): Promise<Project[]> {
+  if (!hasDatabaseEnv()) return byOrder(fallbackProjects.filter((project) => project.isVisible));
+
   try {
     const { rows } = await query("SELECT * FROM projects WHERE is_visible = true ORDER BY sort_order ASC");
     const typedRows = rows as Record<string, unknown>[];
     return typedRows.map(mapProject);
-  } catch {
-    return byOrder(fallbackProjects.filter((project) => project.isVisible));
+  } catch (error) {
+    return failDatabaseLoad("projects", error);
   }
 }
 
 export async function getProject(slug: string): Promise<Project | null> {
+  if (!hasDatabaseEnv()) {
+    return fallbackProjects.find((project) => project.slug === slug && project.isVisible) ?? null;
+  }
+
   try {
     const { rows } = await query("SELECT * FROM projects WHERE slug = $1 AND is_visible = true LIMIT 1", [slug]);
-    if (!rows[0]) return fallbackProjects.find((project) => project.slug === slug && project.isVisible) ?? null;
+    if (!rows[0]) return null;
     return mapProject(rows[0]);
-  } catch {
-    return fallbackProjects.find((project) => project.slug === slug && project.isVisible) ?? null;
+  } catch (error) {
+    return failDatabaseLoad("project", error);
   }
 }
 
 export async function getExperience(): Promise<Experience[]> {
+  if (!hasDatabaseEnv()) return byOrder(fallbackExperience);
+
   try {
     const { rows } = await query("SELECT * FROM experience ORDER BY sort_order ASC");
     const typedRows = rows as Record<string, unknown>[];
@@ -133,12 +152,14 @@ export async function getExperience(): Promise<Experience[]> {
       techStack: listFromValue(row.tech_stack),
       sortOrder: Number(row.sort_order ?? 0)
     }));
-  } catch {
-    return byOrder(fallbackExperience);
+  } catch (error) {
+    return failDatabaseLoad("experience", error);
   }
 }
 
 export async function getEducation(): Promise<Education[]> {
+  if (!hasDatabaseEnv()) return byOrder(fallbackEducation);
+
   try {
     const { rows } = await query("SELECT * FROM education ORDER BY sort_order ASC");
     const typedRows = rows as Record<string, unknown>[];
@@ -153,12 +174,14 @@ export async function getEducation(): Promise<Education[]> {
       highlights: listFromValue(row.highlights),
       sortOrder: Number(row.sort_order ?? 0)
     }));
-  } catch {
-    return byOrder(fallbackEducation);
+  } catch (error) {
+    return failDatabaseLoad("education", error);
   }
 }
 
 export async function getAchievements(): Promise<Achievement[]> {
+  if (!hasDatabaseEnv()) return byOrder(fallbackAchievements);
+
   try {
     const { rows } = await query("SELECT * FROM achievements ORDER BY sort_order ASC");
     const typedRows = rows as Record<string, unknown>[];
@@ -170,7 +193,7 @@ export async function getAchievements(): Promise<Achievement[]> {
       isFeatured: Boolean(row.is_featured),
       sortOrder: Number(row.sort_order ?? 0)
     }));
-  } catch {
-    return byOrder(fallbackAchievements);
+  } catch (error) {
+    return failDatabaseLoad("achievements", error);
   }
 }

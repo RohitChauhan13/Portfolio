@@ -8,6 +8,9 @@ import ProjectImage from "@/components/project-image";
 import { getAchievements, getEducation, getExperience, getProfile, getProjects, getSkills } from "@/lib/data";
 import { pageMetadata, profileJsonLd, websiteJsonLd } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata() {
   const profile = await getProfile();
   return pageMetadata({
@@ -27,7 +30,8 @@ export default async function HomePage() {
     getAchievements()
   ]);
   const featuredSkills = skills.filter((skill) => skill.isFeatured);
-  const projectRail = [...projects, ...projects];
+  const heroSkills = featuredSkills.length ? featuredSkills : skills;
+  const projectRail = projects.length > 1 ? [...projects, ...projects] : projects;
   const jsonLd = [websiteJsonLd(), profileJsonLd(profile, skills, projects)];
 
   return (
@@ -99,7 +103,7 @@ export default async function HomePage() {
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                {featuredSkills.slice(0, 6).map((skill) => (
+                {heroSkills.slice(0, 6).map((skill) => (
                   <span className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-black text-primary" key={skill.id}>{skill.name}</span>
                 ))}
               </div>
@@ -150,7 +154,7 @@ export default async function HomePage() {
         <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeading eyebrow="Skills" title="A practical stack for mobile products and backend systems." text="Grouped around the work recruiters actually care about: shipping apps, integrating APIs, managing data, and debugging production issues." />
           <div className="grid gap-3 sm:grid-cols-2">
-            {featuredSkills.map((skill) => (
+            {skills.map((skill) => (
               <div className="rounded-md border border-border bg-background p-4" key={skill.id}>
                 <div className="flex items-center justify-between gap-4">
                   <p className="font-black text-primary">{skill.name}</p>

@@ -53,5 +53,7 @@ export function displayImageUrl(url: string) {
 
 export function proxiedImageUrl(url: string) {
   const src = displayImageUrl(url);
-  return src ? `/api/avatar-image?src=${encodeURIComponent(src)}` : "";
+  if (!src) return "";
+  if (src.startsWith("/") || src.startsWith("data:")) return src;
+  return `/api/avatar-image?src=${encodeURIComponent(src)}`;
 }
