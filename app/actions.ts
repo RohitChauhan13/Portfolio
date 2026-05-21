@@ -72,6 +72,7 @@ async function requireAdmin() {
 
 function revalidateAdmin() {
   revalidatePath("/rohit/admin");
+  revalidatePath("/api/admin/counts");
   revalidatePath("/rohit/admin/messages");
 }
 
@@ -151,6 +152,7 @@ export async function saveProject(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/projects");
+  revalidatePath(`/projects/${slug}`);
   revalidateAdmin();
   redirect("/rohit/admin/projects");
 }

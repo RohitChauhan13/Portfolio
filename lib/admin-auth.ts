@@ -77,7 +77,7 @@ export async function createAdminSession(email: string, password: string) {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
-      path: "/rohit/admin",
+      path: "/",
       maxAge: 60 * 60
     });
     return true;
@@ -88,6 +88,13 @@ export async function createAdminSession(email: string, password: string) {
 
 export async function clearAdminSession() {
   const cookieStore = await cookies();
+  cookieStore.set(cookieName, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0
+  });
   cookieStore.set(cookieName, "", {
     httpOnly: true,
     sameSite: "lax",

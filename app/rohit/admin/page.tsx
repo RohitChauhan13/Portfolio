@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { loginAdmin, logoutAdmin } from "@/app/actions";
+import { AdminCounts } from "@/components/admin-counts";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { isAdminAuthed } from "@/lib/admin-auth";
-import { hasDatabaseEnv, query } from "@/lib/db";
+import { hasDatabaseEnv } from "@/lib/db";
 
 const cards = [
-  { title: "Profile", href: "/rohit/admin/profile", text: "Edit contact details, social links, headline, and Instagram.", countSql: "SELECT COUNT(*) AS count FROM profile" },
-  { title: "Projects", href: "/rohit/admin/projects", text: "Add case studies, production apps, links, and impact.", countSql: "SELECT COUNT(*) AS count FROM projects" },
-  { title: "Skills", href: "/rohit/admin/skills", text: "Edit skill groups, proficiency, and featured items.", countSql: "SELECT COUNT(*) AS count FROM skills" },
-  { title: "Experience", href: "/rohit/admin/experience", text: "Maintain company work, highlights, and tech stacks.", countSql: "SELECT COUNT(*) AS count FROM experience" },
-  { title: "Education", href: "/rohit/admin/education", text: "Update degree, grade, and academic proof.", countSql: "SELECT COUNT(*) AS count FROM education" },
-  { title: "Achievements", href: "/rohit/admin/achievements", text: "Keep recruiter-facing proof fresh.", countSql: "SELECT COUNT(*) AS count FROM achievements" },
-  { title: "Messages", href: "/rohit/admin/messages", text: "Unread messages from the contact form.", countSql: "SELECT COUNT(*) AS count FROM contact_messages WHERE read_at IS NULL" }
+  { key: "profile", title: "Profile", href: "/rohit/admin/profile", text: "Edit contact details, social links, headline, and Instagram." },
+  { key: "projects", title: "Projects", href: "/rohit/admin/projects", text: "Add case studies, production apps, links, and impact." },
+  { key: "skills", title: "Skills", href: "/rohit/admin/skills", text: "Edit skill groups, proficiency, and featured items." },
+  { key: "experience", title: "Experience", href: "/rohit/admin/experience", text: "Maintain company work, highlights, and tech stacks." },
+  { key: "education", title: "Education", href: "/rohit/admin/education", text: "Update degree, grade, and academic proof." },
+  { key: "achievements", title: "Achievements", href: "/rohit/admin/achievements", text: "Keep recruiter-facing proof fresh." },
+  { key: "messages", title: "Messages", href: "/rohit/admin/messages", text: "Unread messages from the contact form." }
 ];
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -20,7 +21,6 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   if (!authed) return <AdminLogin error={error} />;
 
   const dbAvailable = hasDatabaseEnv();
-  const counts = dbAvailable ? await Promise.all(cards.map((card) => countRows(card.countSql))) : cards.map(() => 0);
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
@@ -46,15 +46,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             DATABASE_URL is missing. Add it to `.env.local` before editing live data.
           </div>
         )}
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {cards.map(({ title, href, text }, index) => (
-            <Link className="rounded-md border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-panel" href={href} key={href}>
-              <p className="text-3xl font-black text-accent">{counts[index]}</p>
-              <h2 className="mt-3 text-xl font-black text-primary">{title}</h2>
-              <p className="mt-2 text-sm leading-6 text-ink">{text}</p>
-            </Link>
-          ))}
-        </div>
+        <AdminCounts cards={cards} />
       </div>
     </main>
   );
@@ -81,13 +73,4 @@ function AdminLogin({ error }: { error?: string }) {
       </form>
     </main>
   );
-}
-
-async function countRows(sql: string) {
-  try {
-    const { rows } = await query(sql);
-    return Number(rows[0]?.count ?? 0);
-  } catch {
-    return 0;
-  }
 }

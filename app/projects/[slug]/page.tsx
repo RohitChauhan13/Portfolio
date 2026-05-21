@@ -3,13 +3,11 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, ExternalLink, Layers3 } from "lucide-react";
 import ProjectImage from "@/components/project-image";
 import { SiteNav } from "@/components/site-nav";
-import { getProfile, getProject, getProjects } from "@/lib/data";
+import { getProfile, getProject } from "@/lib/data";
 import { breadcrumbJsonLd, pageMetadata, projectJsonLd } from "@/lib/seo";
 
-export async function generateStaticParams() {
-  const projects = await getProjects();
-  return projects.map((project) => ({ slug: project.slug }));
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

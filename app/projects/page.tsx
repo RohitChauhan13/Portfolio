@@ -7,6 +7,9 @@ import { getProfile, getProjects } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = pageMetadata({
   title: "Projects",
   description: "Project case studies, shipped apps, and production engineering work by Rohit Chauhan.",
