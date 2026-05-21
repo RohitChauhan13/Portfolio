@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { getProjects } from "@/lib/data";
 import { absoluteUrl } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const projects = await getProjects();
   return [

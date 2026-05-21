@@ -28,9 +28,21 @@ function listFromValue(value: unknown) {
   return [];
 }
 
-function failDatabaseLoad(context: string, error: unknown): never {
-  console.error(`Failed to load ${context} from the database:`, error);
-  throw error;
+function fallbackSkillsList() {
+  return uniqueBy(byOrder(fallbackSkills.filter((skill) => skill.isVisible)), (skill) => `${skill.category.trim().toLowerCase()}::${skill.name.trim().toLowerCase()}`);
+}
+
+function fallbackProjectsList() {
+  return byOrder(fallbackProjects.filter((project) => project.isVisible));
+}
+
+function fallbackProjectBySlug(slug: string) {
+  return fallbackProjects.find((project) => project.slug === slug && project.isVisible) ?? null;
+}
+
+function databaseFallback<T>(context: string, error: unknown, data: T): T {
+  console.warn(`Using fallback ${context} data because the database could not be loaded:`, error);
+  return data;
 }
 
 function mapProject(row: Record<string, unknown>): Project {
@@ -80,14 +92,12 @@ export async function getProfile(): Promise<Profile> {
       openTo: String(data.open_to ?? fallbackProfile.openTo)
     };
   } catch (error) {
-    return failDatabaseLoad("profile", error);
+    return databaseFallback("profile", error, fallbackProfile);
   }
 }
 
 export async function getSkills(): Promise<Skill[]> {
-  if (!hasDatabaseEnv()) {
-    return uniqueBy(byOrder(fallbackSkills.filter((skill) => skill.isVisible)), (skill) => `${skill.category.trim().toLowerCase()}::${skill.name.trim().toLowerCase()}`);
-  }
+  if (!hasDatabaseEnv()) return fallbackSkillsList();
 
   try {
     const { rows } = await query("SELECT * FROM skills WHERE is_visible = true ORDER BY sort_order ASC");
@@ -103,33 +113,31 @@ export async function getSkills(): Promise<Skill[]> {
     }));
     return uniqueBy(mapped, (skill) => `${skill.category.trim().toLowerCase()}::${skill.name.trim().toLowerCase()}`);
   } catch (error) {
-    return failDatabaseLoad("skills", error);
+    return databaseFallback("skills", error, fallbackSkillsList());
   }
 }
 
 export async function getProjects(): Promise<Project[]> {
-  if (!hasDatabaseEnv()) return byOrder(fallbackProjects.filter((project) => project.isVisible));
+  if (!hasDatabaseEnv()) return fallbackProjectsList();
 
   try {
     const { rows } = await query("SELECT * FROM projects WHERE is_visible = true ORDER BY sort_order ASC");
     const typedRows = rows as Record<string, unknown>[];
     return typedRows.map(mapProject);
   } catch (error) {
-    return failDatabaseLoad("projects", error);
+    return databaseFallback("projects", error, fallbackProjectsList());
   }
 }
 
 export async function getProject(slug: string): Promise<Project | null> {
-  if (!hasDatabaseEnv()) {
-    return fallbackProjects.find((project) => project.slug === slug && project.isVisible) ?? null;
-  }
+  if (!hasDatabaseEnv()) return fallbackProjectBySlug(slug);
 
   try {
     const { rows } = await query("SELECT * FROM projects WHERE slug = $1 AND is_visible = true LIMIT 1", [slug]);
     if (!rows[0]) return null;
     return mapProject(rows[0]);
   } catch (error) {
-    return failDatabaseLoad("project", error);
+    return databaseFallback("project", error, fallbackProjectBySlug(slug));
   }
 }
 
@@ -153,7 +161,7 @@ export async function getExperience(): Promise<Experience[]> {
       sortOrder: Number(row.sort_order ?? 0)
     }));
   } catch (error) {
-    return failDatabaseLoad("experience", error);
+    return databaseFallback("experience", error, byOrder(fallbackExperience));
   }
 }
 
@@ -175,7 +183,7 @@ export async function getEducation(): Promise<Education[]> {
       sortOrder: Number(row.sort_order ?? 0)
     }));
   } catch (error) {
-    return failDatabaseLoad("education", error);
+    return databaseFallback("education", error, byOrder(fallbackEducation));
   }
 }
 
@@ -194,6 +202,6 @@ export async function getAchievements(): Promise<Achievement[]> {
       sortOrder: Number(row.sort_order ?? 0)
     }));
   } catch (error) {
-    return failDatabaseLoad("achievements", error);
+    return databaseFallback("achievements", error, byOrder(fallbackAchievements));
   }
 }
