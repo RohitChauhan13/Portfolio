@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { AchievementForm, DeleteButton, EducationForm, ExperienceForm, MessageActions, ProfileForm, ProjectForm, SkillForm } from "@/components/admin-forms";
 import { isAdminAuthed } from "@/lib/admin-auth";
@@ -15,11 +15,12 @@ const sections = {
 } as const;
 
 export default async function AdminSectionPage({ params }: { params: Promise<{ section: string }> }) {
-  if (!(await isAdminAuthed())) redirect("/rohit/admin");
   const { section } = await params;
-  if (section === "messages") return <MessagesPage />;
+  const isMessagesSection = section === "messages";
   const config = sections[section as keyof typeof sections];
-  if (!config) notFound();
+  if (!isMessagesSection && !config) redirect("/");
+  if (!(await isAdminAuthed())) redirect("/rohit/admin");
+  if (isMessagesSection) return <MessagesPage />;
 
   const dbAvailable = hasDatabaseEnv();
   const orderClause = config.table === "profile" ? "created_at ASC" : "sort_order ASC";

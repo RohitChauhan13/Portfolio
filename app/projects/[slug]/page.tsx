@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { ArrowLeft, CheckCircle2, ExternalLink, Layers3 } from "lucide-react";
 import ProjectImage from "@/components/project-image";
 import { SiteNav } from "@/components/site-nav";
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [profile, project] = await Promise.all([getProfile(), getProject(slug)]);
-  if (!project) notFound();
+  if (!project) redirect("/");
   const jsonLd = [
     projectJsonLd(project, profile),
     breadcrumbJsonLd([

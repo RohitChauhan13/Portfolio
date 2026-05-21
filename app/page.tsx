@@ -249,7 +249,7 @@ export default async function HomePage() {
       <section className="border-t border-border bg-surface px-4 py-16 sm:px-6 lg:px-8" id="contact">
         <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.78fr_1fr]">
           <div>
-            <SectionHeading eyebrow="Contact" title="Let's talk about the next product to ship." text="Use the form for recruiter messages, freelance work, or collaboration. Messages are stored in the database and sent to Rohit through Brevo." />
+            <SectionHeading eyebrow="Contact" title="Let's talk about the next product to ship." text="Have a role, project, or collaboration in mind? Send a quick note and I'll get back to you soon." />
             <div className="mt-8 space-y-3 text-sm font-bold text-ink">
               <p>{profile.email}</p>
               <p>{profile.phone}</p>
