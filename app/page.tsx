@@ -6,6 +6,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { SiteNav } from "@/components/site-nav";
 import ProjectImage from "@/components/project-image";
 import { getAchievements, getEducation, getExperience, getProfile, getProjects, getSkills } from "@/lib/data";
+import { experienceYearUnit, formatExperienceYears, getProfessionalExperienceYears, PROFESSIONAL_EXPERIENCE_START_LABEL } from "@/lib/experience-duration";
 import { pageMetadata, profileJsonLd, websiteJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,21 @@ export default async function HomePage() {
   const heroSkills = featuredSkills.length ? featuredSkills : skills;
   const projectRail = projects.length > 1 ? [...projects, ...projects] : projects;
   const jsonLd = [websiteJsonLd(), profileJsonLd(profile, skills, projects)];
+  const experienceYears = getProfessionalExperienceYears();
+  const experienceYearsLabel = formatExperienceYears(experienceYears);
+  const experienceUnit = experienceYearUnit(experienceYearsLabel);
+  const featuredAchievements = achievements
+    .filter((item) => item.isFeatured)
+    .map((item) =>
+      item.id === "one-year-production"
+        ? {
+            ...item,
+            title: `${experienceYearsLabel} ${experienceUnit} of professional product work`,
+            description: `Completed ${experienceYearsLabel} ${experienceUnit} of hands-on React Native and full-stack development from ${PROFESSIONAL_EXPERIENCE_START_LABEL}.`,
+            date: new Date().getUTCFullYear().toString()
+          }
+        : item
+    );
 
   return (
     <main className="min-h-screen bg-background">
@@ -43,8 +59,8 @@ export default async function HomePage() {
         <div className="mx-auto grid w-full max-w-7xl items-start gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1fr)] lg:gap-10 lg:px-8 lg:py-12">
           <div className="min-w-0">
             <div className="inline-flex max-w-full items-center gap-3 rounded-md border border-border bg-surface px-3 py-2 text-xs font-black text-primary sm:text-sm">
-              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-accent text-button-text">1</span>
-              <span className="min-w-0 leading-5">year professional experience since May 2025</span>
+              <span className="grid h-6 min-w-6 shrink-0 place-items-center rounded-md bg-accent px-1.5 text-button-text">{experienceYearsLabel}</span>
+              <span className="min-w-0 leading-5">{experienceUnit} professional experience since {PROFESSIONAL_EXPERIENCE_START_LABEL}</span>
             </div>
             <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[1.02] text-primary sm:text-7xl">
               {profile.publicName}
@@ -180,7 +196,7 @@ export default async function HomePage() {
                     <h3 className="text-2xl font-black text-primary">{job.role}</h3>
                     <p className="mt-1 font-bold text-ink">{job.company} - {job.location}</p>
                   </div>
-                  <p className="text-sm font-black text-accent">May 12, 2025 - Present</p>
+                  <p className="text-sm font-black text-accent">{PROFESSIONAL_EXPERIENCE_START_LABEL} - Present</p>
                 </div>
                 <p className="mt-5 leading-7 text-ink">{job.summary}</p>
                 <ul className="mt-5 grid gap-3">
@@ -224,7 +240,7 @@ export default async function HomePage() {
                   </article>
                 ))}
 
-                {achievements.filter((item) => item.isFeatured).map((item) => (
+                {featuredAchievements.map((item) => (
                   <article className="rounded-md border border-border bg-background p-4" key={item.id}>
                     <div className="flex gap-3">
                       <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-surface text-accent">

@@ -144,7 +144,7 @@ export const experience: Experience[] = [
     company: "GTT Data Solutions",
     role: "Hybrid App Developer / Full Stack Developer",
     location: "Sangli, Maharashtra, India",
-    startDate: "2025-05-12",
+    startDate: "2025-05-21",
     endDate: null,
     isCurrent: true,
     summary: "Building and maintaining production mobile applications, APIs, integrations, and database-backed workflows.",
@@ -178,7 +178,7 @@ export const achievements: Achievement[] = [
   {
     id: "one-year-production",
     title: "1 year of professional product work",
-    description: "Completed a year of hands-on React Native and full-stack development from May 12, 2025.",
+    description: "Completed a year of hands-on React Native and full-stack development from May 21, 2025.",
     date: "2026",
     isFeatured: true,
     sortOrder: 1

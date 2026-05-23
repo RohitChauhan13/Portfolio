@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { submitContact } from "@/app/actions";
 import { AppLoader } from "@/components/app-loader";
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
 export function ContactForm() {
   const [isPending, startTransition] = useTransition();
   const [sent, setSent] = useState(false);
@@ -14,6 +16,13 @@ export function ContactForm() {
     <form
       className="space-y-4"
       action={(formData) => {
+        const email = String(formData.get("email") ?? "").trim();
+        if (!emailPattern.test(email)) {
+          toast.error("Please enter a valid email address.");
+          return;
+        }
+        formData.set("email", email);
+
         startTransition(async () => {
           const result = await submitContact(formData);
           if (result.ok) {
