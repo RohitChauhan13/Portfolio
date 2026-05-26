@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { loginAdmin, logoutAdmin } from "@/app/actions";
 import { AdminCounts } from "@/components/admin-counts";
+import { AdminPasswordField } from "@/components/admin-password-field";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasDatabaseEnv, query } from "@/lib/db";
@@ -92,10 +93,7 @@ function AdminLogin({ error }: { error?: string }) {
           Email
           <input name="email" type="email" required className="mt-2 h-12 w-full rounded-md border border-border bg-field px-4 text-field-foreground outline-none focus:border-primary" />
         </label>
-        <label className="mt-4 block text-sm font-black text-primary">
-          Password
-          <input name="password" type="password" required className="mt-2 h-12 w-full rounded-md border border-border bg-field px-4 text-field-foreground outline-none focus:border-primary" />
-        </label>
+        <AdminPasswordField />
         <PendingSubmitButton className="mt-5 h-12 w-full rounded-md bg-primary px-5 text-sm font-black text-button-text disabled:cursor-not-allowed disabled:opacity-70" pendingChildren="Opening admin">
           Open admin
         </PendingSubmitButton>
