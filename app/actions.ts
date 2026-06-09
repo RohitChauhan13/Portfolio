@@ -18,6 +18,12 @@ const contactSchema = z.object({
   company: z.string().optional()
 });
 
+const enhanceTextSchema = z.object({
+  label: z.string().trim().min(1).max(80),
+  value: z.string().trim().min(2).max(5000),
+  tone: z.enum(["profile", "project", "experience", "education", "achievement", "skill"]).default("profile")
+});
+
 export async function submitContact(formData: FormData) {
   const parsed = contactSchema.safeParse({
     name: String(formData.get("name") ?? "").trim(),
@@ -51,6 +57,96 @@ export async function submitContact(formData: FormData) {
   return { ok: true };
 }
 
+export async function enhanceAdminText(payload: z.infer<typeof enhanceTextSchema>) {
+  await requireAdmin();
+
+  const parsed = enhanceTextSchema.safeParse(payload);
+  if (!parsed.success) return { ok: false, error: "Please add some text before enhancing it." };
+
+  const apiKey = process.env.GROQ_API_KEY;
+  const models = String(process.env.GROQ_MODELS ?? "")
+    .split(",")
+    .map((model) => model.trim())
+    .filter(Boolean);
+
+  if (!apiKey || models.length === 0) {
+    return { ok: false, error: "GROQ_API_KEY or GROQ_MODELS is missing in the environment." };
+  }
+
+  const { label, value, tone } = parsed.data;
+  const systemPrompt = [
+    "You polish portfolio admin content for a software developer portfolio.",
+    "Fix grammar, improve clarity, and make the text recruiter-friendly.",
+    "Keep facts, names, dates, metrics, technologies, URLs, and claims unchanged.",
+    "Do not invent new experience or numbers.",
+    "For line-separated bullets, keep line-separated bullets.",
+    "Never explain your choices. Never include reasoning, analysis, notes, examples, or alternatives.",
+    "Return valid compact JSON only in this exact shape: {\"enhanced\":\"improved text here\"}"
+  ].join(" ");
+  const userPrompt = `Improve this exact admin field.\nField: ${label}\nSection: ${tone}\n\nOriginal text:\n${value}`;
+
+  for (const model of models) {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.35,
+          max_tokens: 450,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ]
+        })
+      });
+
+      if (!response.ok) continue;
+
+      const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+      const enhanced = parseEnhancedText(data.choices?.[0]?.message?.content, value);
+      if (enhanced) return { ok: true, original: value, enhanced, model };
+    } catch (error) {
+      console.error(`Groq enhancement failed with ${model}:`, error);
+    }
+  }
+
+  return { ok: false, error: "AI enhancement failed. Please try again with another model in GROQ_MODELS." };
+}
+
+function parseEnhancedText(content: string | undefined, original: string) {
+  const cleaned = stripReasoning(String(content ?? "").trim()).trim();
+  if (!cleaned) return "";
+
+  try {
+    const parsed = JSON.parse(cleaned) as { enhanced?: unknown };
+    const enhanced = stripReasoning(String(parsed.enhanced ?? "")).trim();
+    return isUsableEnhancedText(enhanced, original) ? enhanced : "";
+  } catch {
+    const match = cleaned.match(/\{[\s\S]*"enhanced"\s*:\s*"([\s\S]*?)"\s*\}/);
+    const enhanced = match?.[1] ? stripReasoning(match[1].replace(/\\"/g, "\"").replace(/\\n/g, "\n")).trim() : cleaned;
+    return isUsableEnhancedText(enhanced, original) ? enhanced : "";
+  }
+}
+
+function stripReasoning(value: string) {
+  return value
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/```(?:json)?/gi, "")
+    .replace(/```/g, "")
+    .trim();
+}
+
+function isUsableEnhancedText(value: string, original: string) {
+  const lowered = value.toLowerCase();
+  const leakedReasoning = ["let me", "i can't", "maybe using", "instead of", "that's good because", "the user might", "response should", "i should"].some((phrase) => lowered.includes(phrase));
+  return Boolean(value) && value.length <= Math.max(240, original.length * 3) && !leakedReasoning;
+}
+
 export async function loginAdmin(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
@@ -65,7 +161,7 @@ export async function logoutAdmin() {
 }
 
 async function requireAdmin() {
-  if (!(await isAdminAuthed())) throw new Error("Unauthorized");
+  if (!(await isAdminAuthed())) redirect("/rohit/admin");
   if (!hasDatabaseEnv()) throw new Error("DATABASE_URL environment variable is missing.");
   return true;
 }
@@ -76,13 +172,33 @@ function revalidateAdmin() {
   revalidatePath("/rohit/admin/messages");
 }
 
+function choiceFromFields(formData: FormData, name: string, fallback = "") {
+  const value = String(formData.get(name) ?? "").trim();
+  if (value === "__other__") return String(formData.get(`${name}_other`) ?? fallback).trim();
+  return value || fallback;
+}
+
+function listFromChoiceFields(formData: FormData, name: string) {
+  const selected = formData
+    .getAll(name)
+    .flatMap((value) => listFromForm(value))
+    .filter((value) => value !== "__other__");
+  const custom = formData.getAll(`${name}_other`).flatMap((value) => listFromForm(value));
+  return [...selected, ...custom].filter((value, index, values) => values.indexOf(value) === index);
+}
+
+function dateFromForm(value: FormDataEntryValue | null) {
+  const text = String(value ?? "").trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : "";
+}
+
 export async function saveProject(formData: FormData) {
   await requireAdmin();
 
   const id = String(formData.get("id") ?? "");
   const title = String(formData.get("title") ?? "");
   const slug = String(formData.get("slug") || slugify(title));
-  const techStack = listFromForm(formData.get("tech_stack"));
+  const techStack = listFromChoiceFields(formData, "tech_stack");
   const impact = listFromForm(formData.get("impact"));
   const isVisible = formData.get("is_visible") === "on";
   const sortOrder = Number(formData.get("sort_order") ?? 99);
@@ -113,14 +229,14 @@ export async function saveProject(formData: FormData) {
         String(formData.get("case_study") ?? ""),
         createdFor,
         techStack,
-        String(formData.get("role") ?? ""),
+        choiceFromFields(formData, "role"),
         impact,
         imageUrl,
         demoUrl,
         String(formData.get("github_url") ?? ""),
         String(formData.get("live_url") ?? ""),
         String(formData.get("store_url") ?? ""),
-        String(formData.get("status") ?? "Draft"),
+        choiceFromFields(formData, "status", "Draft"),
         isVisible,
         sortOrder,
         id
@@ -136,14 +252,14 @@ export async function saveProject(formData: FormData) {
         String(formData.get("case_study") ?? ""),
         createdFor,
         techStack,
-        String(formData.get("role") ?? ""),
+        choiceFromFields(formData, "role"),
         impact,
         imageUrl,
         demoUrl,
         String(formData.get("github_url") ?? ""),
         String(formData.get("live_url") ?? ""),
         String(formData.get("store_url") ?? ""),
-        String(formData.get("status") ?? "Draft"),
+        choiceFromFields(formData, "status", "Draft"),
         isVisible,
         sortOrder
       ]
@@ -167,13 +283,13 @@ export async function saveProfile(formData: FormData) {
     String(formData.get("summary") ?? ""),
     String(formData.get("email") ?? ""),
     String(formData.get("phone") ?? ""),
-    String(formData.get("location") ?? ""),
+    choiceFromFields(formData, "location"),
     String(formData.get("github_url") ?? ""),
     String(formData.get("linkedin_url") ?? ""),
     String(formData.get("instagram_url") ?? ""),
     String(formData.get("resume_url") ?? "/resume.pdf"),
     String(formData.get("avatar_url") ?? ""),
-    String(formData.get("open_to") ?? "")
+    choiceFromFields(formData, "open_to")
   ];
 
   const { rows } = await query("SELECT id FROM profile LIMIT 1");
@@ -202,9 +318,9 @@ export async function saveSkill(formData: FormData) {
 
   const id = String(formData.get("id") ?? "");
   const payload = [
-    String(formData.get("name") ?? ""),
-    String(formData.get("category") ?? ""),
-    Number(formData.get("proficiency") ?? 75),
+    choiceFromFields(formData, "name"),
+    choiceFromFields(formData, "category"),
+    Number(choiceFromFields(formData, "proficiency", "75")),
     formData.get("is_featured") === "on",
     formData.get("is_visible") === "on",
     Number(formData.get("sort_order") ?? 99)
@@ -226,16 +342,26 @@ export async function saveExperience(formData: FormData) {
 
   const id = String(formData.get("id") ?? "");
   const isCurrent = formData.get("is_current") === "on";
+  let startDate = dateFromForm(formData.get("start_date"));
+  const endDate = dateFromForm(formData.get("end_date"));
+
+  if (!startDate && id) {
+    const { rows } = await query("SELECT start_date FROM experience WHERE id = $1 LIMIT 1", [id]);
+    startDate = dateFromForm(rows[0]?.start_date ?? null);
+  }
+
+  if (!startDate) throw new Error("Start date is required.");
+
   const payload = [
     String(formData.get("company") ?? ""),
-    String(formData.get("role") ?? ""),
-    String(formData.get("location") ?? ""),
-    String(formData.get("start_date") ?? ""),
-    isCurrent ? null : String(formData.get("end_date") ?? ""),
+    choiceFromFields(formData, "role"),
+    choiceFromFields(formData, "location"),
+    startDate,
+    isCurrent ? null : endDate || null,
     isCurrent,
     String(formData.get("summary") ?? ""),
     listFromForm(formData.get("highlights")),
-    listFromForm(formData.get("tech_stack")),
+    listFromChoiceFields(formData, "tech_stack"),
     Number(formData.get("sort_order") ?? 99)
   ];
 
@@ -261,12 +387,12 @@ export async function saveEducation(formData: FormData) {
 
   const id = String(formData.get("id") ?? "");
   const payload = [
-    String(formData.get("institution") ?? ""),
-    String(formData.get("degree") ?? ""),
-    String(formData.get("location") ?? ""),
-    String(formData.get("start_year") ?? ""),
-    String(formData.get("end_year") ?? ""),
-    String(formData.get("grade") ?? ""),
+    choiceFromFields(formData, "institution"),
+    choiceFromFields(formData, "degree"),
+    choiceFromFields(formData, "location"),
+    choiceFromFields(formData, "start_year"),
+    choiceFromFields(formData, "end_year"),
+    choiceFromFields(formData, "grade"),
     listFromForm(formData.get("highlights")),
     Number(formData.get("sort_order") ?? 99)
   ];
@@ -295,7 +421,7 @@ export async function saveAchievement(formData: FormData) {
   const payload = [
     String(formData.get("title") ?? ""),
     String(formData.get("description") ?? ""),
-    String(formData.get("date") ?? ""),
+    choiceFromFields(formData, "date"),
     formData.get("is_featured") === "on",
     Number(formData.get("sort_order") ?? 99)
   ];

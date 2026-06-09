@@ -4,6 +4,7 @@ import { createHmac, scryptSync, timingSafeEqual } from "crypto";
 import { query, hasDatabaseEnv } from "@/lib/db";
 
 const cookieName = "rohit_admin";
+const adminSessionMaxAge = 60 * 60;
 
 function hashPassword(password: string, salt: string) {
   return scryptSync(password, salt, 64).toString("hex");
@@ -78,7 +79,7 @@ export async function createAdminSession(email: string, password: string) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60
+      maxAge: adminSessionMaxAge
     });
     return true;
   } catch {

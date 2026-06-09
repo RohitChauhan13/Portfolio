@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, Award, BriefcaseBusiness, CheckCircle2, Download, GraduationCap, MapPin, Rocket, Server, Smartphone, Star, Trophy } from "lucide-react";
+import { ArrowRight, Award, BriefcaseBusiness, CheckCircle2, Download, GraduationCap, MapPin, Rocket, Server, Smartphone, Trophy } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
 import { ProfileAvatar } from "@/components/profile-avatar";
+import { ProjectCarousel } from "@/components/project-carousel";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteNav } from "@/components/site-nav";
-import ProjectImage from "@/components/project-image";
 import { getAchievements, getEducation, getExperience, getProfile, getProjects, getSkills } from "@/lib/data";
 import { experienceYearUnit, formatExperienceYears, getProfessionalExperienceYears, PROFESSIONAL_EXPERIENCE_START_LABEL } from "@/lib/experience-duration";
 import { pageMetadata, profileJsonLd, websiteJsonLd } from "@/lib/seo";
@@ -32,7 +32,6 @@ export default async function HomePage() {
   ]);
   const featuredSkills = skills.filter((skill) => skill.isFeatured);
   const heroSkills = featuredSkills.length ? featuredSkills : skills;
-  const projectRail = projects.length > 1 ? [...projects, ...projects] : projects;
   const jsonLd = [websiteJsonLd(), profileJsonLd(profile, skills, projects)];
   const experienceYears = getProfessionalExperienceYears();
   const experienceYearsLabel = formatExperienceYears(experienceYears);
@@ -137,32 +136,7 @@ export default async function HomePage() {
               <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="project-rail mt-10 overflow-hidden">
-            <div className="project-rail-track flex w-max gap-5">
-              {projectRail.map((project, index) => (
-              <Link
-                href={`/projects/${project.slug}`}
-                key={`${project.id}-${index}`}
-                className="focus-ring w-[17rem] shrink-0 rounded-md border border-border bg-surface p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-panel sm:w-[19rem]"
-              >
-                <div className="overflow-hidden rounded-md border border-border bg-background">
-                  <ProjectImage imageUrl={project.imageUrl} title={project.title} alt={project.title} className="h-32 w-full object-cover" />
-                </div>
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <span className="rounded-md bg-background px-3 py-1 text-xs font-black text-accent">{project.status}</span>
-                  <Star size={18} className="text-accent" />
-                </div>
-                <h3 className="mt-3 text-xl font-black text-primary">{project.title}</h3>
-                <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink">{project.shortDescription}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {project.techStack.slice(0, 3).map((tech) => (
-                    <span className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-bold text-ink" key={tech}>{tech}</span>
-                  ))}
-                </div>
-              </Link>
-              ))}
-            </div>
-          </div>
+          <ProjectCarousel projects={projects} />
         </div>
       </section>
 

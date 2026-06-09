@@ -9,6 +9,7 @@ Portfolio website for Rohit Chauhan with a public recruiter-facing site and a hi
 - Tailwind CSS
 - Supabase Postgres through `pg`
 - Brevo contact email
+- Groq AI text enhancement
 - Zod validation
 
 ## Local Setup
@@ -32,12 +33,15 @@ BREVO_SENDER_EMAIL=""
 BREVO_SENDER_NAME="Rohit Chauhan Portfolio"
 CONTACT_TO_EMAIL="rohitchauhan6232@gmail.com"
 ADMIN_SESSION_SECRET=""
+GROQ_API_KEY=""
+GROQ_MODELS="llama-3.3-70b-versatile,groq/compound-mini"
 ```
 
 Notes:
 
 - `DATABASE_URL` must be a Supabase pooled Postgres connection string for Vercel/serverless.
 - `ADMIN_SESSION_SECRET` should be a long random string.
+- `GROQ_API_KEY` and `GROQ_MODELS` enable admin AI enhancement for grammar and portfolio copy.
 - Do not commit `.env` or `.env.local`.
 
 ## Database
@@ -73,6 +77,7 @@ Admin supports:
 - Education
 - Achievements
 - Contact messages
+- AI enhancement with before/after review for portfolio copy fields
 
 ## Vercel Deployment
 

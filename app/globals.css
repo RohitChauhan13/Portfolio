@@ -103,25 +103,12 @@ a {
 
 .project-rail {
   mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.project-rail-track {
-  animation: project-rail-scroll 34s linear infinite;
-}
-
-.project-rail:hover .project-rail-track,
-.project-rail:focus-within .project-rail-track {
-  animation-play-state: paused;
-}
-
-@keyframes project-rail-scroll {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(calc(-50% - 10px));
-  }
+.project-rail::-webkit-scrollbar {
+  display: none;
 }
 
 .app-loader-screen {
@@ -411,10 +398,6 @@ a {
     mask-image: none;
     overflow-x: auto;
     padding-bottom: 0.5rem;
-  }
-
-  .project-rail-track {
-    animation: none;
   }
 
   .loader,

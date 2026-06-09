@@ -34,20 +34,20 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
       <div className="mx-auto max-w-6xl">
         <AdminHeader title={config.title} />
         {!dbAvailable && <MissingDatabase />}
-        <div className={isProfile ? "mt-8" : "mt-8 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]"}>
-          <section>
+        <div className={isProfile ? "mt-8" : "mt-8 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"}>
+          <section className="min-w-0">
             <h2 className="text-xl font-black text-primary">{isProfile ? "Edit profile" : "Add new"}</h2>
             <div className="mt-4">
               {isProfile ? <Form row={data[0]} /> : <Form row={nextRow} />}
             </div>
           </section>
-          {!isProfile && <section>
+          {!isProfile && <section className="min-w-0">
             <h2 className="text-xl font-black text-primary">Existing</h2>
-            <div className="mt-4 grid gap-4">
+            <div className="mt-4 grid min-w-0 gap-4">
               {(data ?? []).map((row) => (
-                <details className="rounded-md border border-border bg-surface p-4" key={String(row.id)}>
-                  <summary className="cursor-pointer text-base font-black text-primary">{labelFor(row)}</summary>
-                  <div className="mt-4">
+                <details className="min-w-0 overflow-hidden rounded-md border border-border bg-surface p-4" key={String(row.id)}>
+                  <summary className="cursor-pointer truncate text-base font-black text-primary">{labelFor(row)}</summary>
+                  <div className="mt-4 min-w-0">
                     <Form row={row} />
                     <div className="mt-3">
                       <DeleteButton table={config.table} id={String(row.id)} label={config.singular} />
