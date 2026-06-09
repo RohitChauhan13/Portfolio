@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { Star } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ProjectImage from "@/components/project-image";
 import type { Project } from "@/lib/types";
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export function ProjectCarousel({ projects }: { projects: Project[] }) {
   const railRef = useRef<HTMLDivElement>(null);
@@ -14,11 +19,40 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
   const [isDragging, setIsDragging] = useState(false);
   const items = useMemo(() => (projects.length > 1 ? [...projects, ...projects] : projects), [projects]);
 
+  useGSAP(
+    () => {
+      const media = gsap.matchMedia();
+
+      media.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo(
+          ".project-card",
+          { y: 26, opacity: 0, scale: 0.97 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.58,
+            ease: "power3.out",
+            stagger: 0.055,
+            clearProps: "opacity,transform",
+            scrollTrigger: {
+              trigger: railRef.current,
+              start: "top 82%",
+              toggleActions: "play none none reverse"
+            }
+          }
+        );
+      });
+
+      return () => media.revert();
+    },
+    { scope: railRef, dependencies: [items.length] }
+  );
+
   useEffect(() => {
     const rail = railRef.current;
     if (!rail || projects.length <= 1) return;
 
-    let frame = 0;
     const tick = () => {
       const now = Date.now();
       const halfway = rail.scrollWidth / 2;
@@ -28,11 +62,10 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
         if (rail.scrollLeft >= halfway) rail.scrollLeft -= halfway;
       }
 
-      frame = requestAnimationFrame(tick);
     };
 
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+    gsap.ticker.add(tick);
+    return () => gsap.ticker.remove(tick);
   }, [projects.length]);
 
   function pauseBriefly(duration = 1800) {
@@ -82,6 +115,16 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
     if (captured) rail?.releasePointerCapture(event.pointerId);
   }
 
+  function animateCard(card: HTMLElement, active: boolean) {
+    gsap.to(card, {
+      y: active ? -8 : 0,
+      scale: active ? 1.055 : 1,
+      duration: active ? 0.28 : 0.22,
+      ease: active ? "power3.out" : "power2.out",
+      overwrite: "auto"
+    });
+  }
+
   return (
     <div className="mt-10">
       <div
@@ -100,8 +143,12 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
           <Link
             href={`/projects/${project.slug}`}
             key={`${project.id}-${index}`}
-            className="focus-ring w-[17rem] shrink-0 rounded-md border border-border bg-surface p-4 shadow-sm transition duration-200 hover:z-10 hover:scale-[1.06] hover:shadow-panel active:opacity-85 sm:w-[19rem]"
+            className="project-card focus-ring w-[17rem] shrink-0 rounded-md border border-border bg-surface p-4 shadow-sm transition-colors duration-200 hover:z-10 hover:shadow-panel active:opacity-85 sm:w-[19rem]"
             onFocus={() => pauseBriefly(1200)}
+            onPointerEnter={(event) => {
+              if (!isDragging) animateCard(event.currentTarget, true);
+            }}
+            onPointerLeave={(event) => animateCard(event.currentTarget, false)}
             onClick={(event) => {
               if (Date.now() < suppressClickUntilRef.current) {
                 event.preventDefault();

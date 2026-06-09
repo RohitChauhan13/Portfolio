@@ -1,10 +1,16 @@
 import Link from "next/link";
-import { ArrowRight, Award, BriefcaseBusiness, CheckCircle2, Download, GraduationCap, MapPin, Rocket, Server, Smartphone, Trophy } from "lucide-react";
+import Image from "next/image";
+import type { ReactNode } from "react";
+import { ArrowRight, Award, CheckCircle2, Github, GraduationCap, Instagram, Linkedin, Mail, MapPin, Phone, Trophy } from "lucide-react";
+import HeroImage from "@/Image/HeroImage-Photoroom.png";
 import { ContactForm } from "@/components/contact-form";
-import { ProfileAvatar } from "@/components/profile-avatar";
+import { ExperienceMotion } from "@/components/experience-motion";
+import { HeroIntroMotion } from "@/components/hero-intro-motion";
+import { HeroNav } from "@/components/hero-nav";
+import { HeroTechField } from "@/components/hero-tech-field";
 import { ProjectCarousel } from "@/components/project-carousel";
 import { SectionHeading } from "@/components/section-heading";
-import { SiteNav } from "@/components/site-nav";
+import { SkillsMotion } from "@/components/skills-motion";
 import { getAchievements, getEducation, getExperience, getProfile, getProjects, getSkills } from "@/lib/data";
 import { experienceYearUnit, formatExperienceYears, getProfessionalExperienceYears, PROFESSIONAL_EXPERIENCE_START_LABEL } from "@/lib/experience-duration";
 import { pageMetadata, profileJsonLd, websiteJsonLd } from "@/lib/seo";
@@ -30,8 +36,6 @@ export default async function HomePage() {
     getEducation(),
     getAchievements()
   ]);
-  const featuredSkills = skills.filter((skill) => skill.isFeatured);
-  const heroSkills = featuredSkills.length ? featuredSkills : skills;
   const jsonLd = [websiteJsonLd(), profileJsonLd(profile, skills, projects)];
   const experienceYears = getProfessionalExperienceYears();
   const experienceYearsLabel = formatExperienceYears(experienceYears);
@@ -52,79 +56,51 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <SiteNav profile={profile} />
-      <section className="relative overflow-hidden border-b border-border bg-background">
-        <div className="absolute inset-x-0 top-0 h-px bg-primary/30" />
-        <div className="mx-auto grid w-full max-w-7xl items-start gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1fr)] lg:gap-10 lg:px-8 lg:py-12">
-          <div className="min-w-0">
-            <div className="inline-flex max-w-full items-center gap-3 rounded-md border border-border bg-surface px-3 py-2 text-xs font-black text-primary sm:text-sm">
-              <span className="grid h-6 min-w-6 shrink-0 place-items-center rounded-md bg-accent px-1.5 text-button-text">{experienceYearsLabel}</span>
-              <span className="min-w-0 leading-5">{experienceUnit} professional experience since {PROFESSIONAL_EXPERIENCE_START_LABEL}</span>
-            </div>
-            <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[1.02] text-primary sm:text-7xl">
-              {profile.publicName}
-            </h1>
-            <p className="mt-4 max-w-3xl text-2xl font-black leading-tight text-foreground sm:text-4xl">{profile.headline}</p>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-ink">{profile.summary}</p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link className="focus-ring inline-flex h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-sm font-black text-button-text transition hover:bg-primary/90" href="#work">
-                Explore work
-                <ArrowRight size={17} />
-              </Link>
-              <Link className="focus-ring inline-flex h-12 items-center justify-center gap-2 rounded-md border border-border bg-surface px-6 text-sm font-black text-primary transition hover:border-primary" href={profile.resumeUrl} target="_blank" rel="noopener noreferrer">
-                <Download size={17} />
-                Resume
-              </Link>
-            </div>
-            <div className="mt-7 grid gap-3 text-sm font-bold text-ink sm:grid-cols-2">
-              <span className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2"><MapPin size={17} className="text-accent" />{profile.location}</span>
-              <span className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2"><BriefcaseBusiness size={17} className="text-accent" />{profile.openTo}</span>
-            </div>
-          </div>
+      <section className="relative min-h-screen overflow-hidden bg-background text-primary">
+        <HeroTechField />
+        <HeroIntroMotion className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
+          <header className="flex h-14 items-center justify-between gap-6">
+            <Link href="/" className="hero-nav-item focus-ring text-xl font-black italic tracking-tight text-primary">
+              {"<"} Rohit dev {"/>"}
+            </Link>
+            <HeroNav />
+          </header>
 
-          <div className="grid min-w-0 gap-4 lg:pt-5">
-            <div className="overflow-hidden rounded-md border border-border bg-surface shadow-panel">
-              <div className="grid gap-0 sm:grid-cols-[0.62fr_1fr]">
-                <div className="bg-muted p-3">
-                  <ProfileAvatar name={profile.publicName} avatarUrl={profile.avatarUrl} className="mx-auto aspect-[4/5] h-auto w-full max-w-64 sm:max-w-none" priority />
-                </div>
-                <div className="grid content-between gap-5 p-5">
-                  <div>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">Now building</p>
-                      <Rocket size={18} className="text-primary" />
-                    </div>
-                    <p className="mt-4 text-2xl font-black leading-tight text-primary sm:text-3xl">Mobile apps, APIs, and tools that survive real users.</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <MetricCard value="10k+" label="users/downloads" />
-                    <MetricCard value="15+" label="backend flows" />
-                  </div>
-                </div>
+          <div className="grid flex-1 items-center gap-8 py-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(420px,1.18fr)]">
+            <div className="max-w-xl">
+              <p className="hero-copy-item text-base font-bold text-ink">Hey !</p>
+              <h1 className="hero-name mt-2 text-4xl font-black leading-none text-primary sm:text-5xl">
+                <span className="sr-only">I&apos;m {profile.publicName}</span>
+                <span aria-hidden="true">{animatedName(`I'm ${profile.publicName}`)}</span>
+              </h1>
+              <p className="hero-copy-item mt-3 text-xl font-bold text-ink">{profile.headline}</p>
+              <p className="hero-copy-item mt-5 max-w-lg text-sm font-semibold leading-7 text-ink">{profile.summary}</p>
+              <div className="hero-copy-item mt-6 flex flex-wrap items-center gap-3">
+                {profile.githubUrl && <HeroSocial href={profile.githubUrl} label="GitHub"><Github size={18} /></HeroSocial>}
+                {profile.instagramUrl && <HeroSocial href={profile.instagramUrl} label="Instagram"><Instagram size={18} /></HeroSocial>}
+                {profile.linkedinUrl && <HeroSocial href={profile.linkedinUrl} label="LinkedIn"><Linkedin size={18} /></HeroSocial>}
+                <HeroSocial href="#contact" label="Contact"><Mail size={18} /></HeroSocial>
+              </div>
+              <div className="hero-copy-item mt-7 flex flex-wrap gap-3">
+                <Link className="focus-ring inline-flex h-11 items-center justify-center rounded-md bg-primary px-5 text-sm font-black text-button-text shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary/90" href={profile.resumeUrl} target="_blank" rel="noopener noreferrer">
+                  View Resume
+                </Link>
+                <Link className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-md border border-border bg-surface px-5 text-sm font-black text-primary transition hover:border-primary" href="#work">
+                  See Work
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+              <div className="hero-copy-item mt-7 inline-flex max-w-full items-center gap-3 rounded-md bg-primary/5 px-3 py-2 text-sm font-bold text-primary">
+                <MapPin size={16} className="shrink-0 text-accent" />
+                {profile.location}
               </div>
             </div>
 
-            <div className="rounded-md border border-border bg-surface p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-accent">
-                    <Server size={15} />
-                    Stack in motion
-                  </div>
-                  <p className="mt-3 text-2xl font-black leading-tight text-primary">React Native, backend APIs, and admin tools in one delivery loop.</p>
-                </div>
-                <div className="hidden h-12 w-12 shrink-0 place-items-center rounded-md bg-background text-accent sm:grid">
-                  <Smartphone size={24} />
-                </div>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {heroSkills.slice(0, 6).map((skill) => (
-                  <span className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-black text-primary" key={skill.id}>{skill.name}</span>
-                ))}
-              </div>
+            <div className="hero-art relative mx-auto w-full max-w-[620px]">
+              <Image src={HeroImage} alt="Developer sitting beside a computer desk" priority className="h-auto w-full object-contain" />
             </div>
           </div>
-        </div>
+        </HeroIntroMotion>
       </section>
 
       <section className="px-4 py-16 sm:px-6 lg:px-8" id="work">
@@ -143,28 +119,28 @@ export default async function HomePage() {
       <section className="border-y border-border bg-surface px-4 py-16 sm:px-6 lg:px-8" id="skills">
         <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeading eyebrow="Skills" title="A practical stack for mobile products and backend systems." text="Grouped around the work recruiters actually care about: shipping apps, integrating APIs, managing data, and debugging production issues." />
-          <div className="grid gap-3 sm:grid-cols-2">
+          <SkillsMotion className="skills-perspective grid gap-3 sm:grid-cols-2">
             {skills.map((skill) => (
-              <div className="rounded-md border border-border bg-background p-4" key={skill.id}>
+              <div className="skill-card rounded-md border border-border bg-background p-4 shadow-sm" key={skill.id}>
                 <div className="flex items-center justify-between gap-4">
                   <p className="font-black text-primary">{skill.name}</p>
                   <p className="text-xs font-black uppercase tracking-[0.12em] text-accent">{skill.category}</p>
                 </div>
                 <div className="mt-4 h-2 rounded-full bg-muted">
-                  <div className="h-2 rounded-full bg-accent" style={{ width: `${skill.proficiency}%` }} />
+                  <div className="skill-bar h-2 rounded-full bg-accent" data-level={skill.proficiency} />
                 </div>
               </div>
             ))}
-          </div>
+          </SkillsMotion>
         </div>
       </section>
 
       <section className="px-4 py-16 sm:px-6 lg:px-8" id="experience">
         <div className="mx-auto w-full max-w-7xl">
           <SectionHeading eyebrow="Experience" title="Full-stack delivery inside real product work." />
-          <div className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.75fr]">
+          <ExperienceMotion className="experience-perspective mt-10 grid gap-5 lg:grid-cols-[1fr_0.75fr]">
             {experience.map((job) => (
-              <article className="rounded-md border border-border bg-surface p-6 shadow-sm" key={job.id}>
+              <article className="experience-card rounded-md border border-border bg-surface p-6 shadow-sm" key={job.id}>
                 <div className="flex flex-col justify-between gap-3 sm:flex-row">
                   <div>
                     <h3 className="text-2xl font-black text-primary">{job.role}</h3>
@@ -175,7 +151,7 @@ export default async function HomePage() {
                 <p className="mt-5 leading-7 text-ink">{job.summary}</p>
                 <ul className="mt-5 grid gap-3">
                   {job.highlights.map((item) => (
-                    <li className="flex gap-3 text-sm leading-6 text-ink" key={item}>
+                    <li className="experience-highlight flex gap-3 text-sm leading-6 text-ink" key={item}>
                       <CheckCircle2 className="mt-0.5 shrink-0 text-accent" size={17} />
                       {item}
                     </li>
@@ -183,7 +159,7 @@ export default async function HomePage() {
                 </ul>
               </article>
             ))}
-            <div className="rounded-md border border-border bg-surface p-6 shadow-sm">
+            <div className="proof-card rounded-md border border-border bg-surface p-6 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-black uppercase tracking-[0.16em] text-accent">Proof</p>
@@ -196,7 +172,7 @@ export default async function HomePage() {
 
               <div className="mt-6 grid gap-4">
                 {education.map((item) => (
-                  <article className="rounded-md border border-border bg-background p-4" key={item.id}>
+                  <article className="proof-item rounded-md border border-border bg-background p-4" key={item.id}>
                     <div className="flex gap-3">
                       <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-surface text-primary">
                         <GraduationCap size={21} />
@@ -215,7 +191,7 @@ export default async function HomePage() {
                 ))}
 
                 {featuredAchievements.map((item) => (
-                  <article className="rounded-md border border-border bg-background p-4" key={item.id}>
+                  <article className="proof-item rounded-md border border-border bg-background p-4" key={item.id}>
                     <div className="flex gap-3">
                       <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-surface text-accent">
                         <Award size={20} />
@@ -232,7 +208,7 @@ export default async function HomePage() {
                 ))}
               </div>
             </div>
-          </div>
+          </ExperienceMotion>
         </div>
       </section>
 
@@ -241,9 +217,18 @@ export default async function HomePage() {
           <div>
             <SectionHeading eyebrow="Contact" title="Let's talk about the next product to ship." text="Have a role, project, or collaboration in mind? Send a quick note and I'll get back to you soon." />
             <div className="mt-8 space-y-3 text-sm font-bold text-ink">
-              <p>{profile.email}</p>
-              <p>{profile.phone}</p>
-              <p>{profile.location}</p>
+              <a className="flex items-center gap-3 transition hover:text-primary" href={`mailto:${profile.email}`}>
+                <Mail size={17} className="shrink-0 text-accent" />
+                {profile.email}
+              </a>
+              <a className="flex items-center gap-3 transition hover:text-primary" href={`tel:${profile.phone.replace(/[^\d+]/g, "")}`}>
+                <Phone size={17} className="shrink-0 text-accent" />
+                {profile.phone}
+              </a>
+              <p className="flex items-center gap-3">
+                <MapPin size={17} className="shrink-0 text-accent" />
+                {profile.location}
+              </p>
             </div>
           </div>
           <div className="rounded-md border border-border bg-background p-6 shadow-sm">
@@ -255,11 +240,18 @@ export default async function HomePage() {
   );
 }
 
-function MetricCard({ value, label }: { value: string; label: string }) {
+function HeroSocial({ href, label, children }: { href: string; label: string; children: ReactNode }) {
   return (
-    <div className="rounded-md border border-border bg-surface p-4 shadow-sm">
-      <p className="text-2xl font-black leading-none text-primary">{value}</p>
-      <p className="mt-2 text-xs font-black leading-5 text-ink">{label}</p>
-    </div>
+    <Link href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined} aria-label={label} className="focus-ring grid h-9 w-9 place-items-center rounded-md bg-primary text-button-text shadow-md shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-accent">
+      {children}
+    </Link>
   );
+}
+
+function animatedName(name: string) {
+  return name.split("").map((letter, index) => (
+    <span className="hero-name-letter inline-block" key={`${letter}-${index}`}>
+      {letter === " " ? "\u00A0" : letter}
+    </span>
+  ));
 }
