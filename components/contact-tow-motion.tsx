@@ -9,17 +9,40 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export function ContactTowMotion({ children, className = "" }: { children: ReactNode; className?: string }) {
   const scope = useRef<HTMLDivElement>(null);
+  const sentRef = useRef(false);
 
   useGSAP(
     () => {
       const media = gsap.matchMedia();
 
       media.add("(prefers-reduced-motion: no-preference) and (min-width: 1024px)", () => {
+        const onSent = () => {
+          sentRef.current = true;
+          const exit = gsap.timeline();
+          const stopText = scope.current?.querySelector(".contact-stop-board span");
+
+          exit
+            .call(() => {
+              if (stopText) stopText.textContent = "GO";
+            })
+            .to(".contact-stop-board", { color: "rgb(22, 163, 74)", scale: 1.08, duration: 0.24, ease: "back.out(2)" })
+            .to(".contact-stop-board span", { color: "rgb(22, 163, 74)", duration: 0.18 }, "<")
+            .to(".contact-tow-rope", { opacity: 0, scaleX: 0, duration: 0.34, ease: "power2.in" }, "+=0.22")
+            .to(".contact-stop-board", { opacity: 0, y: -12, duration: 0.32, ease: "power2.in" }, "<")
+            .to(".contact-tow-car", { x: -360, opacity: 0, duration: 0.78, ease: "power2.in" }, "-=0.1")
+            .to(".contact-tow-wheel", { rotate: "-=720", duration: 0.78, ease: "none" }, "<");
+        };
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
             start: "top 76%",
-            toggleActions: "play none none reverse"
+            toggleActions: "play none none none",
+            onEnter: () => {
+              if (sentRef.current) {
+                gsap.set(".contact-stop-board, .contact-tow-rope", { opacity: 0 });
+                gsap.set(".contact-tow-car", { opacity: 0, x: -360 });
+              }
+            }
           }
         });
 
@@ -27,7 +50,17 @@ export function ContactTowMotion({ children, className = "" }: { children: React
         gsap.set(".contact-tow-car", { x: 860, yPercent: -50, opacity: 1 });
         gsap.set(".contact-tow-rope", { x: 860, yPercent: -50, scaleX: 0.72, opacity: 0, transformOrigin: "left center" });
         gsap.set(".contact-stop-board", { scale: 0.82, opacity: 0, y: 8 });
+        gsap.set(".contact-stop-board span", { color: "rgb(var(--danger))" });
         gsap.set(".contact-tow-wheel", { rotate: 0 });
+        const initialStopText = scope.current?.querySelector(".contact-stop-board span");
+        if (initialStopText) initialStopText.textContent = "STOP";
+
+        if (sentRef.current) {
+          gsap.set(".contact-tow-card", { x: 0, y: 0, opacity: 1, rotate: 0 });
+          gsap.set(".contact-stop-board, .contact-tow-rope", { opacity: 0 });
+          gsap.set(".contact-tow-car", { opacity: 0, x: -360 });
+          return;
+        }
 
         timeline
           .to(".contact-tow-rope", { opacity: 1, scaleX: 1, duration: 0.36, ease: "power2.out" })
@@ -38,6 +71,10 @@ export function ContactTowMotion({ children, className = "" }: { children: React
           .to(".contact-tow-car", { y: -3, duration: 0.18, repeat: 5, yoyo: true, ease: "sine.inOut" }, 0.2)
           .to(".contact-stop-board", { scale: 1, opacity: 1, y: 0, duration: 0.34, ease: "back.out(2)" }, 1.55)
           .to(".contact-tow-rope", { opacity: 0.32, duration: 0.35, ease: "power2.out" }, "-=0.05");
+
+        window.addEventListener("contact-message-sent", onSent);
+
+        return () => window.removeEventListener("contact-message-sent", onSent);
       });
 
       media.add("(prefers-reduced-motion: reduce), (max-width: 1023px)", () => {

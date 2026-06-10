@@ -4,10 +4,9 @@ import { useRef, useState, useTransition } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { Send } from "lucide-react";
+import { LoaderCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { submitContact } from "@/app/actions";
-import { AppLoader } from "@/components/app-loader";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -63,6 +62,7 @@ export function ContactForm() {
             if (button) {
               gsap.fromTo(button, { scale: 0.96 }, { scale: 1, duration: 0.45, ease: "elastic.out(1, 0.45)" });
             }
+            window.dispatchEvent(new Event("contact-message-sent"));
             toast.success("Message sent");
           } else {
             toast.error(result.error);
@@ -70,7 +70,6 @@ export function ContactForm() {
         });
       }}
     >
-      {isPending && <AppLoader />}
       <input className="hidden" name="company" tabIndex={-1} autoComplete="off" />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field name="name" label="Name" autoComplete="name" />
@@ -94,7 +93,7 @@ export function ContactForm() {
         <p id="message-requirement" className="mt-2 text-xs text-ink/70">Minimum 10 characters.</p>
       </label>
       <button disabled={isPending || sent} className="contact-motion-item contact-submit focus-ring inline-flex h-12 items-center gap-2 rounded-md bg-primary px-6 text-sm font-black text-button-text transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60">
-        <Send size={17} />
+        {isPending ? <LoaderCircle className="animate-spin" size={17} /> : <Send size={17} />}
         {sent ? "Sent" : isPending ? "Sending" : "Send message"}
       </button>
     </form>
