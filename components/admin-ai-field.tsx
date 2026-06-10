@@ -35,6 +35,8 @@ export function AdminAiField({
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const inputClass = `${baseInputClass} ${multiline ? "min-h-24 py-2 leading-6" : "h-10"}`;
+  const canEnhance = value.trim().length >= 5;
+  const enhanceTitle = !canEnhance ? "Minimum 5 characters required" : isPending ? "Enhancing text" : "Enhance with AI";
 
   function enhance() {
     setError("");
@@ -56,15 +58,17 @@ export function AdminAiField({
     <div className="grid min-w-0 gap-1 text-xs font-black uppercase tracking-[0.12em] text-ink">
       <span className="flex items-center justify-between gap-3">
         <label htmlFor={id}>{label}</label>
-        <button
-          className="inline-flex h-8 items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 text-xs font-black normal-case tracking-normal text-primary transition hover:border-primary hover:bg-primary hover:text-button-text disabled:cursor-wait disabled:opacity-70"
-          type="button"
-          onClick={enhance}
-          disabled={isPending || value.trim().length < 2}
-        >
-          {isPending ? <AiLoader /> : <Sparkles size={14} />}
-          {isPending ? "Enhancing" : "Enhance"}
-        </button>
+        <span title={enhanceTitle}>
+          <button
+            className={`inline-flex h-8 items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 text-xs font-black normal-case tracking-normal text-primary transition hover:border-primary hover:bg-primary hover:text-button-text disabled:opacity-70 ${isPending ? "disabled:cursor-wait" : "disabled:cursor-not-allowed"}`}
+            type="button"
+            onClick={enhance}
+            disabled={isPending || !canEnhance}
+          >
+            {isPending ? <AiLoader /> : <Sparkles size={14} />}
+            {isPending ? "Enhancing" : "Enhance"}
+          </button>
+        </span>
       </span>
       {multiline ? (
         <textarea id={id} className={inputClass} name={name} value={value} onChange={(event) => setValue(event.target.value)} />
