@@ -4,15 +4,26 @@ import type { Profile, Project, Skill } from "@/lib/types";
 
 export const siteName = "Rohit Chauhan Portfolio";
 export const defaultDescription =
-  "Portfolio of Rohit Chauhan, a React Native and Full Stack Developer building production mobile apps, backend APIs, and workflow tools.";
+  "Rohit Chauhan is a React Native and Full Stack Developer building production mobile apps, backend APIs, database-backed workflows, and portfolio-grade case studies.";
 
 export const defaultKeywords = [
   "Rohit Chauhan",
+  "Rohit Chauhan Portfolio",
   "React Native Developer",
   "Full Stack Developer",
   "Node.js Developer",
   "TypeScript Developer",
   "Mobile App Developer",
+  "Next.js Developer",
+  "REST API Developer",
+  "MySQL Developer",
+  "Supabase Developer",
+  "Firebase Developer",
+  "Sangli Developer",
+  "Maharashtra Developer",
+  "Mai Hyundai",
+  "Ticket Khidakee",
+  "Medimate",
   "Portfolio"
 ];
 
@@ -39,12 +50,17 @@ export function pageMetadata({
     alternates: {
       canonical: url
     },
+    authors: [{ name: "Rohit Chauhan", url: absoluteUrl("/") }],
+    creator: "Rohit Chauhan",
+    publisher: "Rohit Chauhan",
+    category: "software development portfolio",
     openGraph: {
       title: title ? `${title} | Rohit Chauhan` : "Rohit Chauhan | React Native and Full Stack Developer",
       description,
       url,
       siteName,
       type,
+      locale: "en_US",
       images: [{ url: imageUrl }]
     },
     twitter: {

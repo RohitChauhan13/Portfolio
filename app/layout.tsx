@@ -18,6 +18,13 @@ export const metadata: Metadata = {
   authors: [{ name: "Rohit Chauhan" }],
   creator: "Rohit Chauhan",
   publisher: "Rohit Chauhan",
+  category: "software development portfolio",
+  referrer: "origin-when-cross-origin",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false
+  },
   alternates: {
     canonical: absoluteUrl("/")
   },
@@ -27,12 +34,14 @@ export const metadata: Metadata = {
     url: absoluteUrl("/"),
     siteName,
     type: "website",
-    locale: "en_US"
+    locale: "en_US",
+    images: [{ url: absoluteUrl("/favicon.svg"), width: 512, height: 512, alt: "Rohit Chauhan portfolio" }]
   },
   twitter: {
     card: "summary_large_image",
     title: "Rohit Chauhan | React Native and Full Stack Developer",
-    description: defaultDescription
+    description: defaultDescription,
+    images: [absoluteUrl("/favicon.svg")]
   },
   robots: {
     index: true,
