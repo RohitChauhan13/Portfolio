@@ -59,12 +59,18 @@ export async function submitContact(formData: FormData) {
 
   const emotion = aiReview.available && aiReview.accepted ? aiReview.emotion : "normal";
   const aiEmail = aiReview.available && aiReview.accepted ? aiReview.email : undefined;
+  const emailMethod = aiEmail ? "ai" : "default";
+  const emailDefaultReason = aiEmail ? "" : defaultEmailReason(aiReview);
 
   if (hasDatabaseEnv()) {
-    await query(
-      "INSERT INTO contact_messages (name, email, subject, message, source) VALUES ($1, $2, $3, $4, $5)",
-      [parsed.data.name, parsed.data.email, parsed.data.subject, parsed.data.message, "portfolio"]
-    );
+    await insertContactMessage({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      subject: parsed.data.subject,
+      message: parsed.data.message,
+      emailMethod,
+      emailDefaultReason
+    });
     revalidateAdmin();
   }
 
@@ -73,6 +79,51 @@ export async function submitContact(formData: FormData) {
   });
 
   return { ok: true };
+}
+
+type AcceptedAiReview = Awaited<ReturnType<typeof reviewContactWithAi>>;
+
+function defaultEmailReason(aiReview: AcceptedAiReview) {
+  if (!aiReview.available) return aiReview.reason;
+  if (aiReview.accepted && !aiReview.email) return "AI accepted the message but did not return a usable email reply.";
+  return "";
+}
+
+async function insertContactMessage({
+  name,
+  email,
+  subject,
+  message,
+  emailMethod,
+  emailDefaultReason
+}: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  emailMethod: string;
+  emailDefaultReason: string;
+}) {
+  try {
+    await query(
+      "INSERT INTO contact_messages (name, email, subject, message, source, email_method, email_default_reason) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [name, email, subject, message, "portfolio", emailMethod, emailDefaultReason]
+    );
+  } catch (error) {
+    if (isUndefinedColumnError(error)) {
+      await query(
+        "INSERT INTO contact_messages (name, email, subject, message, source) VALUES ($1, $2, $3, $4, $5)",
+        [name, email, subject, message, "portfolio"]
+      );
+      return;
+    }
+
+    throw error;
+  }
+}
+
+function isUndefinedColumnError(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && (error as { code?: unknown }).code === "42703";
 }
 
 export async function enhanceAdminText(payload: z.infer<typeof enhanceTextSchema>) {

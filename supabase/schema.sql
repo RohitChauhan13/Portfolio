@@ -162,6 +162,8 @@ alter table public.projects add column if not exists created_for text not null d
 alter table public.projects add column if not exists demo_url text not null default '';
 alter table public.projects add column if not exists is_visible boolean not null default true;
 alter table public.skills add column if not exists is_visible boolean not null default true;
+alter table public.contact_messages add column if not exists email_method text not null default 'default';
+alter table public.contact_messages add column if not exists email_default_reason text not null default '';
 
 with ranked_skills as (
   select

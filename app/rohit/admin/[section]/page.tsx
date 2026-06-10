@@ -102,6 +102,7 @@ async function MessagesPage() {
                   <p className="text-xs font-black uppercase tracking-[0.14em] text-accent">{row.read_at ? "Read" : "Unread"}</p>
                   <h2 className="mt-2 text-xl font-black text-primary">{String(row.subject)}</h2>
                   <p className="mt-1 text-sm font-bold text-ink">{String(row.name)} - {String(row.email)}</p>
+                  <EmailMethod row={row} />
                 </div>
                 <MessageActions id={String(row.id)} readAt={(row.read_at as string | null) ?? null} />
               </div>
@@ -112,6 +113,21 @@ async function MessagesPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+function EmailMethod({ row }: { row: Record<string, unknown> }) {
+  const method = String(row.email_method ?? "unknown").toLowerCase();
+  const reason = String(row.email_default_reason ?? "").trim();
+  const label = method === "ai" ? "AI email" : method === "default" ? "Default email" : "Email method unknown";
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <span className={method === "ai" ? "rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-emerald-800" : "rounded-md bg-amber-100 px-2.5 py-1 text-xs font-black uppercase tracking-[0.12em] text-amber-900"}>
+        {label}
+      </span>
+      {method === "default" && reason && <span className="text-xs font-bold leading-5 text-ink">Reason: {reason}</span>}
+    </div>
   );
 }
 

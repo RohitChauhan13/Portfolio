@@ -24,7 +24,7 @@ export type ContactAiReview =
       warningTitle: string;
       warningMessage: string;
     }
-  | { available: false };
+  | { available: false; reason: string };
 
 type RawContactReview = {
   accepted?: unknown;
@@ -138,7 +138,9 @@ export async function reviewContactWithAi(
     .map((m) => m.trim())
     .filter(Boolean);
 
-  if (!apiKey || models.length === 0) return { available: false };
+  if (!apiKey || models.length === 0) {
+    return { available: false, reason: "Groq API key or model list is missing." };
+  }
 
   const userPrompt = buildUserPrompt(input);
 
@@ -149,7 +151,7 @@ export async function reviewContactWithAi(
   }
 
   // 4. All models failed — degrade gracefully.
-  return { available: false };
+  return { available: false, reason: "AI contact review failed for every configured model." };
 }
 
 async function callGroq(
