@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { clearAdminSession, createAdminSession, isAdminAuthed } from "@/lib/admin-auth";
+import { reviewContactWithAi } from "@/lib/contact-ai";
 import { sendContactEmail } from "@/lib/email";
 import { query, hasDatabaseEnv } from "@/lib/db";
 import { listFromForm, slugify } from "@/lib/utils";
@@ -13,8 +14,8 @@ import { listFromForm, slugify } from "@/lib/utils";
 const contactSchema = z.object({
   name: z.string().trim().min(2, "Please enter your name.").max(80),
   email: z.string().trim().email("Please enter a valid email.").max(120),
-  subject: z.string().trim().min(3, "Please enter a subject.").max(120),
-  message: z.string().trim().min(10, "Please enter a longer message.").max(3000),
+  subject: z.string().trim().min(3, "Please enter a subject.").max(100),
+  message: z.string().trim().min(10, "Please enter a longer message.").max(500),
   company: z.string().optional()
 });
 
@@ -42,6 +43,23 @@ export async function submitContact(formData: FormData) {
   }
   if (parsed.data.company) return { ok: true };
 
+  const aiReview = await reviewContactWithAi(parsed.data);
+  if (aiReview.available && !aiReview.accepted) {
+    return {
+      ok: false,
+      error: aiReview.error,
+      warning: aiReview.showWarning
+        ? {
+            title: aiReview.warningTitle,
+            message: aiReview.warningMessage
+          }
+        : undefined
+    };
+  }
+
+  const emotion = aiReview.available && aiReview.accepted ? aiReview.emotion : "normal";
+  const aiEmail = aiReview.available && aiReview.accepted ? aiReview.email : undefined;
+
   if (hasDatabaseEnv()) {
     await query(
       "INSERT INTO contact_messages (name, email, subject, message, source) VALUES ($1, $2, $3, $4, $5)",
@@ -50,7 +68,7 @@ export async function submitContact(formData: FormData) {
     revalidateAdmin();
   }
 
-  sendContactEmail(parsed.data).catch((error) => {
+  sendContactEmail({ ...parsed.data, emotion, aiEmail }).catch((error) => {
     console.error("Background contact email failed:", error);
   });
 
@@ -438,6 +456,23 @@ export async function saveAchievement(formData: FormData) {
   revalidatePath("/");
   revalidateAdmin();
   redirect("/rohit/admin/achievements");
+}
+
+export async function saveSiteSettings(formData: FormData) {
+  await requireAdmin();
+
+  const inspectProtectionEnabled = formData.get("inspect_protection_enabled") === "on";
+
+  await query(
+    "INSERT INTO site_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()",
+    ["inspect_protection_enabled", String(inspectProtectionEnabled)]
+  );
+
+  revalidatePath("/");
+  revalidatePath("/projects");
+  revalidatePath("/rohit/admin");
+  revalidatePath("/rohit/admin/config");
+  redirect("/rohit/admin/config");
 }
 
 export async function deleteRow(formData: FormData) {

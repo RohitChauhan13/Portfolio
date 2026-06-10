@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
+import { InspectProtection } from "@/components/inspect-protection";
+import { getSiteSettings } from "@/lib/data";
 import { defaultDescription, defaultKeywords, siteName } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
 import "./globals.css";
@@ -50,11 +52,14 @@ export const metadata: Metadata = {
 
 const setInitialTheme = `(function(){try{const theme=localStorage.getItem('theme'); if(theme==='dark' || theme==='light'){document.documentElement.dataset.theme=theme; return;} if(window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.dataset.theme='dark';}}catch(e){}})();`;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
+        <InspectProtection enabled={settings.inspectProtectionEnabled} />
         {children}
         <Toaster richColors position="top-right" />
       </body>

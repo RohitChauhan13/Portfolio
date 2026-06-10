@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { AchievementForm, DeleteButton, EducationForm, ExperienceForm, MessageActions, ProfileForm, ProjectForm, SkillForm } from "@/components/admin-forms";
+import { AchievementForm, DeleteButton, EducationForm, ExperienceForm, MessageActions, ProfileForm, ProjectForm, SiteSettingsForm, SkillForm } from "@/components/admin-forms";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { isAdminAuthed } from "@/lib/admin-auth";
+import { getSiteSettings } from "@/lib/data";
 import { hasDatabaseEnv, query } from "@/lib/db";
 
 const sections = {
@@ -17,10 +19,12 @@ const sections = {
 export default async function AdminSectionPage({ params }: { params: Promise<{ section: string }> }) {
   const { section } = await params;
   const isMessagesSection = section === "messages";
+  const isConfigSection = section === "config";
   const config = sections[section as keyof typeof sections];
-  if (!isMessagesSection && !config) redirect("/");
+  if (!isMessagesSection && !isConfigSection && !config) redirect("/");
   if (!(await isAdminAuthed())) redirect("/rohit/admin");
   if (isMessagesSection) return <MessagesPage />;
+  if (isConfigSection) return <ConfigPage />;
 
   const dbAvailable = hasDatabaseEnv();
   const orderClause = config.table === "profile" ? "created_at ASC" : "sort_order ASC";
@@ -58,6 +62,23 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
               {(data ?? []).length === 0 && <p className="rounded-md border border-border bg-surface p-4 text-sm font-bold text-ink">No rows yet.</p>}
             </div>
           </section>}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+async function ConfigPage() {
+  const settings = await getSiteSettings();
+  const dbAvailable = hasDatabaseEnv();
+
+  return (
+    <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <AdminHeader title="Config" />
+        {!dbAvailable && <MissingDatabase />}
+        <div className="mt-8">
+          <SiteSettingsForm inspectProtectionEnabled={settings.inspectProtectionEnabled} />
         </div>
       </div>
     </main>
@@ -105,6 +126,7 @@ function AdminHeader({ title }: { title: string }) {
         <h1 className="mt-2 text-4xl font-black text-primary">{title}</h1>
       </div>
       <div className="flex flex-wrap gap-2">
+        <ThemeToggle />
         <Link className="focus-ring inline-flex h-10 items-center gap-2 rounded-md border border-border bg-field px-4 py-2 text-sm font-black text-primary" href="/rohit/admin">
           <ArrowLeft size={16} />
           Dashboard

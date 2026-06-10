@@ -1,4 +1,4 @@
-import type { Achievement, Education, Experience, Profile, Project, Skill } from "@/lib/types";
+import type { Achievement, Education, Experience, Profile, Project, SiteSettings, Skill } from "@/lib/types";
 
 export const profile: Profile = {
   name: "Rohit Kamlesh Chauhan",
@@ -15,6 +15,10 @@ export const profile: Profile = {
   resumeUrl: "/resume.pdf",
   avatarUrl: "",
   openTo: "Remote, hybrid, and onsite roles"
+};
+
+export const siteSettings: SiteSettings = {
+  inspectProtectionEnabled: false
 };
 
 export const skills: Skill[] = [

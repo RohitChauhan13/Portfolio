@@ -89,3 +89,7 @@ export type ContactMessage = {
   readAt: string | null;
   createdAt: string;
 };
+
+export type SiteSettings = {
+  inspectProtectionEnabled: boolean;
+};

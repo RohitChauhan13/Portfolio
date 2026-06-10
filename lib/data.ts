@@ -1,7 +1,7 @@
 import "server-only";
 import { hasDatabaseEnv, query } from "@/lib/db";
-import { achievements as fallbackAchievements, education as fallbackEducation, experience as fallbackExperience, profile as fallbackProfile, projects as fallbackProjects, skills as fallbackSkills } from "@/lib/fallback-data";
-import type { Achievement, Education, Experience, Profile, Project, Skill } from "@/lib/types";
+import { achievements as fallbackAchievements, education as fallbackEducation, experience as fallbackExperience, profile as fallbackProfile, projects as fallbackProjects, siteSettings as fallbackSiteSettings, skills as fallbackSkills } from "@/lib/fallback-data";
+import type { Achievement, Education, Experience, Profile, Project, SiteSettings, Skill } from "@/lib/types";
 
 function byOrder<T extends { sortOrder: number }>(items: T[]) {
   return [...items].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -44,6 +44,14 @@ function databaseFallback<T>(context: string, error: unknown, data: T): T {
   const message = error instanceof Error ? error.message : String(error);
   console.warn(`Using fallback ${context} data because the database could not be loaded: ${message}`);
   return data;
+}
+
+function booleanSetting(value: unknown, fallback = false) {
+  if (typeof value === "boolean") return value;
+  const text = String(value ?? "").trim().toLowerCase();
+  if (["true", "1", "yes", "on"].includes(text)) return true;
+  if (["false", "0", "no", "off"].includes(text)) return false;
+  return fallback;
 }
 
 function mapProject(row: Record<string, unknown>): Project {
@@ -94,6 +102,19 @@ export async function getProfile(): Promise<Profile> {
     };
   } catch (error) {
     return databaseFallback("profile", error, fallbackProfile);
+  }
+}
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  if (!hasDatabaseEnv()) return fallbackSiteSettings;
+
+  try {
+    const { rows } = await query("SELECT key, value FROM site_settings WHERE key = 'inspect_protection_enabled'");
+    return {
+      inspectProtectionEnabled: booleanSetting(rows[0]?.value, fallbackSiteSettings.inspectProtectionEnabled)
+    };
+  } catch (error) {
+    return databaseFallback("site settings", error, fallbackSiteSettings);
   }
 }
 

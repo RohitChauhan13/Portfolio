@@ -3,6 +3,7 @@ import { loginAdmin, logoutAdmin } from "@/app/actions";
 import { AdminCounts } from "@/components/admin-counts";
 import { AdminPasswordField } from "@/components/admin-password-field";
 import { PendingSubmitButton } from "@/components/pending-submit-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { hasDatabaseEnv, query } from "@/lib/db";
 
@@ -13,7 +14,8 @@ const cards = [
   { key: "experience", title: "Experience", href: "/rohit/admin/experience", text: "Maintain company work, highlights, and tech stacks." },
   { key: "education", title: "Education", href: "/rohit/admin/education", text: "Update degree, grade, and academic proof." },
   { key: "achievements", title: "Achievements", href: "/rohit/admin/achievements", text: "Keep recruiter-facing proof fresh." },
-  { key: "messages", title: "Messages", href: "/rohit/admin/messages", text: "Unread messages from the contact form." }
+  { key: "messages", title: "Messages", href: "/rohit/admin/messages", text: "Unread messages from the contact form." },
+  { key: "config", title: "Config", href: "/rohit/admin/config", text: "Toggle public-site behavior such as casual inspect deterrence." }
 ];
 
 const countQueries = {
@@ -23,7 +25,8 @@ const countQueries = {
   experience: "SELECT COUNT(*) AS count FROM experience",
   education: "SELECT COUNT(*) AS count FROM education",
   achievements: "SELECT COUNT(*) AS count FROM achievements",
-  messages: "SELECT COUNT(*) AS count FROM contact_messages WHERE read_at IS NULL"
+  messages: "SELECT COUNT(*) AS count FROM contact_messages WHERE read_at IS NULL",
+  config: "SELECT COUNT(*) AS count FROM site_settings"
 } as const;
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -43,6 +46,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             <h1 className="mt-2 text-4xl font-black text-primary">Portfolio control room</h1>
           </div>
           <div className="flex flex-wrap gap-2">
+            <ThemeToggle />
             <Link href="/" className="inline-flex h-10 items-center rounded-md border border-border bg-field px-4 text-sm font-black text-primary">
               View public site
             </Link>
@@ -86,7 +90,10 @@ function AdminLogin({ error }: { error?: string }) {
   return (
     <main className="grid min-h-screen place-items-center bg-background px-4">
       <form action={loginAdmin} className="w-full max-w-md rounded-md border border-border bg-surface p-6 shadow-panel">
-        <p className="text-sm font-black uppercase tracking-[0.18em] text-accent">Rohit admin</p>
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-accent">Rohit admin</p>
+          <ThemeToggle />
+        </div>
         <h1 className="mt-3 text-3xl font-black text-primary">Admin login</h1>
         {error && <p className="mt-4 rounded-md bg-danger-surface p-3 text-sm font-bold text-danger">Invalid email or password.</p>}
         <label className="mt-5 block text-sm font-black text-primary">

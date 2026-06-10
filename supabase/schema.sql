@@ -115,6 +115,12 @@ create table if not exists public.admin_users (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.site_settings (
+  key text primary key,
+  value text not null default '',
+  updated_at timestamptz not null default now()
+);
+
 alter table public.profile enable row level security;
 alter table public.skills enable row level security;
 alter table public.projects enable row level security;
@@ -123,9 +129,10 @@ alter table public.education enable row level security;
 alter table public.achievements enable row level security;
 alter table public.contact_messages enable row level security;
 alter table public.admin_users enable row level security;
+alter table public.site_settings enable row level security;
 
 grant usage on schema public to anon, authenticated;
-grant select on public.profile, public.skills, public.projects, public.experience, public.education, public.achievements to anon, authenticated;
+grant select on public.profile, public.skills, public.projects, public.experience, public.education, public.achievements, public.site_settings to anon, authenticated;
 revoke all on public.contact_messages from anon, authenticated;
 revoke all on public.admin_users from anon, authenticated;
 
@@ -146,6 +153,9 @@ create policy "Public portfolio education read" on public.education for select t
 
 drop policy if exists "Public portfolio achievements read" on public.achievements;
 create policy "Public portfolio achievements read" on public.achievements for select to anon, authenticated using (true);
+
+drop policy if exists "Public portfolio site settings read" on public.site_settings;
+create policy "Public portfolio site settings read" on public.site_settings for select to anon, authenticated using (true);
 
 alter table public.profile add column if not exists instagram_url text default '';
 alter table public.projects add column if not exists created_for text not null default '';
@@ -237,6 +247,10 @@ values (
   'Remote, hybrid, and onsite roles'
 )
 on conflict do nothing;
+
+insert into public.site_settings (key, value) values
+('inspect_protection_enabled', 'false')
+on conflict (key) do nothing;
 
 insert into public.skills (name, category, proficiency, is_featured, sort_order) values
 ('React Native', 'Mobile', 92, true, 1),

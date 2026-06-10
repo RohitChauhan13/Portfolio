@@ -6,6 +6,7 @@ const allowedExactPaths = new Set([
   "/projects/",
   "/rohit/admin",
   "/rohit/admin/",
+  "/rohit/admin/config",
   "/rohit/admin/achievements",
   "/rohit/admin/education",
   "/rohit/admin/experience",

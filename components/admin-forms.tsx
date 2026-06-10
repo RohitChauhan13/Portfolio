@@ -1,4 +1,4 @@
-import { markMessageRead, saveAchievement, saveEducation, saveExperience, saveProfile, saveProject, saveSkill } from "@/app/actions";
+import { markMessageRead, saveAchievement, saveEducation, saveExperience, saveProfile, saveProject, saveSiteSettings, saveSkill } from "@/app/actions";
 import { AdminAiField } from "./admin-ai-field";
 import { ChoiceSelect, DatePickerField, MultiChoiceSelect } from "./admin-choice-fields";
 import { DeleteButton } from "./delete-button";
@@ -182,6 +182,27 @@ function Field({ name, label, row, type = "text", enhance = false, tone = "profi
       {label}
       <input className={inputClass} name={name} type={type} defaultValue={value} />
     </label>
+  );
+}
+
+export function SiteSettingsForm({ inspectProtectionEnabled }: { inspectProtectionEnabled: boolean }) {
+  return (
+    <form action={saveSiteSettings} className="grid gap-4 rounded-md border border-border bg-surface p-5 shadow-sm">
+      <div>
+        <p className="text-sm font-black uppercase tracking-[0.16em] text-accent">Inspect protection</p>
+        <h2 className="mt-2 text-2xl font-black text-primary">Casual inspect deterrent</h2>
+        <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-ink">
+          Blocks right-click and common inspect/source shortcuts for public pages. This cannot fully prevent browser DevTools or source viewing.
+        </p>
+      </div>
+      <label className="flex w-fit items-center gap-3 rounded-md border border-border bg-field px-4 py-3 text-sm font-black text-primary">
+        <input name="inspect_protection_enabled" type="checkbox" defaultChecked={inspectProtectionEnabled} />
+        Disable casual inspect on public site
+      </label>
+      <PendingSubmitButton className="h-10 w-fit rounded-md bg-primary px-4 text-sm font-black text-button-text disabled:cursor-not-allowed disabled:opacity-70" pendingChildren="Saving">
+        Save config
+      </PendingSubmitButton>
+    </form>
   );
 }
 
