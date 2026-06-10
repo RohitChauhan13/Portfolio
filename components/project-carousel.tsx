@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import ProjectImage from "@/components/project-image";
 import type { Project } from "@/lib/types";
 
@@ -194,15 +194,9 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
           {String(activeIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}
         </p>
         <h3 className="mt-3 text-3xl font-black leading-tight text-primary sm:text-4xl">{activeProject.title}</h3>
-        <p className="mt-4 max-w-xl text-sm font-semibold leading-7 text-ink">{activeProject.shortDescription}</p>
+        <p className="mt-4 line-clamp-2 max-w-xl text-sm font-semibold leading-7 text-ink">{activeProject.shortDescription}</p>
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          {activeProject.techStack.slice(0, 4).map((tech) => (
-            <span className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-black text-ink" key={tech}>
-              {tech}
-            </span>
-          ))}
-        </div>
+        <TechStackRow techStack={activeProject.techStack} />
 
         <div className="mt-7 flex flex-wrap items-center gap-3">
           <Link className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-black text-button-text shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary/90" href={`/projects/${activeProject.slug}`}>
@@ -282,4 +276,61 @@ export function ProjectCarousel({ projects }: { projects: Project[] }) {
       </div>
     </div>
   );
+}
+
+function TechStackRow({ techStack }: { techStack: string[] }) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(techStack.length);
+
+  useLayoutEffect(() => {
+    const row = rowRef.current;
+    const measure = measureRef.current;
+    if (!row || !measure) return;
+
+    function updateVisibleCount() {
+      const availableWidth = row.clientWidth;
+      const chips = Array.from(measure.children) as HTMLElement[];
+      const gap = Number.parseFloat(window.getComputedStyle(measure).columnGap || "0");
+      let usedWidth = 0;
+      let nextVisibleCount = 0;
+
+      for (const chip of chips) {
+        const nextWidth = usedWidth + chip.offsetWidth + (nextVisibleCount > 0 ? gap : 0);
+        if (nextWidth > availableWidth) break;
+
+        usedWidth = nextWidth;
+        nextVisibleCount += 1;
+      }
+
+      setVisibleCount(Math.max(nextVisibleCount, techStack.length > 0 ? 1 : 0));
+    }
+
+    updateVisibleCount();
+
+    const resizeObserver = new ResizeObserver(updateVisibleCount);
+    resizeObserver.observe(row);
+    resizeObserver.observe(measure);
+
+    return () => resizeObserver.disconnect();
+  }, [techStack]);
+
+  return (
+    <div className="relative mt-5 min-w-0">
+      <div ref={rowRef} className="flex min-w-0 flex-nowrap gap-2 overflow-hidden">
+        {techStack.slice(0, visibleCount).map((tech) => (
+          <TechChip key={tech} tech={tech} />
+        ))}
+      </div>
+      <div ref={measureRef} className="invisible pointer-events-none absolute inset-x-0 top-0 flex flex-nowrap gap-2" aria-hidden="true">
+        {techStack.map((tech) => (
+          <TechChip key={tech} tech={tech} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TechChip({ tech }: { tech: string }) {
+  return <span className="shrink-0 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-black text-ink">{tech}</span>;
 }
