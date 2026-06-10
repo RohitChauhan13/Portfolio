@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type CSSProperties } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
@@ -15,6 +15,7 @@ export function AppLoader() {
     ["A", "S", "D", "F", "G", "H", "J"],
     ["Z", "X", "C", "V", "B", "N"]
   ];
+  const keyIndexes = new Map(rows.flat().map((key, index) => [key, index]));
 
   useGSAP(
     () => {
@@ -104,8 +105,8 @@ export function AppLoader() {
           </div>
           <div className="laptop-loader-code">
             <span className="laptop-loader-prompt">~/rohit.dev</span>
-            <span className="laptop-loader-line laptop-loader-line-1">{renderCodeLine(codeLines[0])}<span className="laptop-loader-caret" /></span>
-            <span className="laptop-loader-line laptop-loader-line-2">{renderCodeLine(codeLines[1])}<span className="laptop-loader-caret" /></span>
+            <span className="laptop-loader-line laptop-loader-line-1">{renderCodeLine(codeLines[0], 0)}<span className="laptop-loader-caret" /></span>
+            <span className="laptop-loader-line laptop-loader-line-2">{renderCodeLine(codeLines[1], 1)}<span className="laptop-loader-caret" /></span>
           </div>
         </div>
         <div className="laptop-loader-hinge" />
@@ -113,11 +114,11 @@ export function AppLoader() {
           {rows.map((row) => (
             <div className="laptop-loader-key-row" key={row.join("")}>
               {row.map((key) => (
-                <span className="laptop-loader-key" key={key}>{key}</span>
+                <span className="laptop-loader-key" style={{ "--loader-key-delay": `${(((keyIndexes.get(key) ?? 0) * 7) % 11) * 0.07}s` } as CSSProperties} key={key}>{key}</span>
               ))}
             </div>
           ))}
-          <span className="laptop-loader-space">SPACE</span>
+          <span className="laptop-loader-space" style={{ "--loader-key-delay": "0.54s" } as CSSProperties}>SPACE</span>
         </div>
       </div>
       <p className="laptop-loader-label">Programming my own world...</p>
@@ -125,9 +126,9 @@ export function AppLoader() {
   );
 }
 
-function renderCodeLine(line: string) {
+function renderCodeLine(line: string, lineIndex: number) {
   return line.split("").map((char, index) => (
-    <span className="laptop-loader-char" key={`${char}-${index}`}>
+    <span className="laptop-loader-char" style={{ "--loader-char-delay": `${lineIndex * 1.2 + index * 0.045}s` } as CSSProperties} key={`${char}-${index}`}>
       {char === " " ? "\u00A0" : char}
     </span>
   ));

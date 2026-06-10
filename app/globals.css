@@ -359,6 +359,7 @@ html[data-theme="dark"] body {
   display: inline-block;
   min-width: 0.55ch;
   opacity: 0.45;
+  animation: laptop-loader-char-highlight 3.4s var(--loader-char-delay, 0s) ease-in-out infinite;
 }
 
 .laptop-loader-caret {
@@ -369,6 +370,7 @@ html[data-theme="dark"] body {
   border-radius: 0.15rem;
   background: rgb(var(--accent));
   box-shadow: 0 0 18px rgb(var(--accent) / 0.34);
+  animation: laptop-loader-caret-blink 0.72s steps(2, jump-none) infinite;
 }
 
 .laptop-loader-hinge {
@@ -412,6 +414,7 @@ html[data-theme="dark"] body {
   line-height: 1;
   transform-origin: bottom center;
   will-change: transform, opacity;
+  animation: laptop-loader-key-tap 1.55s var(--loader-key-delay, 0s) ease-in-out infinite;
 }
 
 .laptop-loader-key {
@@ -456,6 +459,64 @@ html[data-theme="dark"] body {
   }
 }
 
+@keyframes laptop-loader-char-highlight {
+  0%,
+  16%,
+  100% {
+    color: currentColor;
+    opacity: 0.42;
+    transform: translateY(0);
+  }
+
+  22%,
+  44% {
+    color: rgb(var(--accent));
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  56% {
+    color: rgb(var(--primary));
+    opacity: 0.72;
+    transform: translateY(0);
+  }
+}
+
+@keyframes laptop-loader-caret-blink {
+  0%,
+  48% {
+    opacity: 1;
+  }
+
+  49%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes laptop-loader-key-tap {
+  0%,
+  62%,
+  100% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0.72;
+    background: rgb(var(--primary) / 0.2);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.38), 0 3px 0 rgb(var(--primary) / 0.16);
+  }
+
+  70% {
+    transform: translateY(4px) scaleY(0.56);
+    opacity: 1;
+    background: rgb(var(--accent) / 0.82);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 16px rgb(var(--accent) / 0.28);
+  }
+
+  84% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0.82;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .project-rail {
     mask-image: none;
@@ -468,6 +529,13 @@ html[data-theme="dark"] body {
   }
 
   .laptop-loader-screen::after {
+    animation: none;
+  }
+
+  .laptop-loader-char,
+  .laptop-loader-caret,
+  .laptop-loader-key,
+  .laptop-loader-space {
     animation: none;
   }
 }
