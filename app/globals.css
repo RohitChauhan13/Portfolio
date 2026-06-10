@@ -233,6 +233,193 @@ html[data-theme="dark"] body {
   will-change: transform;
 }
 
+.contact-tow-stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-tow-card {
+  position: relative;
+  z-index: 2;
+  will-change: transform, opacity;
+}
+
+.contact-tow-car {
+  position: absolute;
+  left: 16rem;
+  top: 74%;
+  z-index: 3;
+  width: 7.8rem;
+  height: 3rem;
+  opacity: 0;
+  color: rgb(var(--primary));
+  filter: drop-shadow(0 16px 22px rgb(var(--primary) / 0.16));
+  transform: translateY(-50%);
+  will-change: transform;
+}
+
+.contact-car-body {
+  position: absolute;
+  z-index: 1;
+  left: 0.35rem;
+  right: 0.35rem;
+  bottom: 0.65rem;
+  height: 1.95rem;
+  border: 0.15rem solid currentColor;
+  border-radius: 1.35rem 1.1rem 0.55rem 0.55rem;
+  background:
+    linear-gradient(135deg, rgb(var(--surface)) 0 34%, rgb(var(--accent) / 0.18) 34% 100%),
+    rgb(var(--background));
+}
+
+.contact-car-body::before {
+  content: "";
+  position: absolute;
+  right: 0.9rem;
+  top: -0.74rem;
+  width: 2.8rem;
+  height: 1.2rem;
+  border: 0.14rem solid currentColor;
+  border-bottom: 0;
+  border-radius: 1rem 1rem 0 0;
+  background: rgb(var(--surface));
+}
+
+.contact-car-window {
+  position: absolute;
+  right: 1.22rem;
+  top: -0.48rem;
+  width: 1.8rem;
+  height: 0.82rem;
+  border-radius: 0.6rem 0.6rem 0.12rem 0.12rem;
+  background: rgb(var(--accent) / 0.22);
+}
+
+.contact-car-light {
+  display: none;
+}
+
+.contact-tow-wheel {
+  position: absolute;
+  bottom: 0.22rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 0.18rem solid currentColor;
+  border-radius: 999px;
+  background: rgb(var(--surface));
+  box-shadow: inset 0 0 0 0.18rem rgb(var(--accent) / 0.2);
+}
+
+.contact-tow-wheel-left {
+  left: 1.35rem;
+}
+
+.contact-tow-wheel-right {
+  right: 1.35rem;
+}
+
+.contact-tow-rope {
+  position: absolute;
+  left: 20.15rem;
+  right: calc(52% - 0.85rem);
+  top: 74%;
+  z-index: 1;
+  width: auto;
+  height: 0.14rem;
+  opacity: 0;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, rgb(var(--primary) / 0.88) 0 0.52rem, rgb(var(--accent) / 0.42) 0.52rem 1.04rem);
+  box-shadow: 0 0 14px rgb(var(--primary) / 0.12);
+  transform: translateY(-50%);
+}
+
+@media (min-width: 1024px) {
+  .contact-tow-card {
+    opacity: 0;
+  }
+}
+
+.contact-tow-rope::after {
+  content: "";
+  position: absolute;
+  left: -0.55rem;
+  top: 50%;
+  width: 0.58rem;
+  height: 0.58rem;
+  border: 0.14rem solid rgb(var(--primary));
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: rgb(var(--background));
+}
+
+.contact-tow-rope::before {
+  content: "";
+  position: absolute;
+  right: -0.48rem;
+  top: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 0.13rem solid rgb(var(--primary));
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: rgb(var(--background));
+}
+
+.contact-stop-board {
+  position: absolute;
+  left: 8.9rem;
+  top: 68%;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 2.65rem;
+  height: 2.65rem;
+  color: rgb(var(--primary));
+  transform: translateY(-50%);
+  will-change: transform, opacity;
+}
+
+.contact-stop-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 0.14rem solid currentColor;
+  border-radius: 0.45rem;
+  background: rgb(var(--danger-surface));
+  box-shadow: 0 12px 24px rgb(var(--primary) / 0.12);
+  transform: rotate(45deg);
+}
+
+.contact-stop-board::after {
+  content: "";
+  position: absolute;
+  top: 2.55rem;
+  width: 0.16rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.contact-stop-board span {
+  position: relative;
+  z-index: 1;
+  color: rgb(var(--danger));
+  font-size: 0.52rem;
+  font-weight: 1000;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 1023px) {
+  .contact-tow-stage {
+    padding-bottom: 0;
+  }
+
+  .contact-stop-board {
+    display: none;
+  }
+}
+
 .hero-tech-float:nth-child(even) {
   border-color: rgb(var(--accent) / 0.13);
   opacity: 0.5;
@@ -362,17 +549,6 @@ html[data-theme="dark"] body {
   animation: laptop-loader-char-highlight 3.4s var(--loader-char-delay, 0s) ease-in-out infinite;
 }
 
-.laptop-loader-caret {
-  display: inline-block;
-  width: 0.58rem;
-  height: 1.16rem;
-  margin-left: 0.18rem;
-  border-radius: 0.15rem;
-  background: rgb(var(--accent));
-  box-shadow: 0 0 18px rgb(var(--accent) / 0.34);
-  animation: laptop-loader-caret-blink 0.72s steps(2, jump-none) infinite;
-}
-
 .laptop-loader-hinge {
   width: 88%;
   height: 0.46rem;
@@ -482,18 +658,6 @@ html[data-theme="dark"] body {
   }
 }
 
-@keyframes laptop-loader-caret-blink {
-  0%,
-  48% {
-    opacity: 1;
-  }
-
-  49%,
-  100% {
-    opacity: 0.2;
-  }
-}
-
 @keyframes laptop-loader-key-tap {
   0%,
   62%,
@@ -533,7 +697,6 @@ html[data-theme="dark"] body {
   }
 
   .laptop-loader-char,
-  .laptop-loader-caret,
   .laptop-loader-key,
   .laptop-loader-space {
     animation: none;

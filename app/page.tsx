@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { ArrowRight, Award, CheckCircle2, Github, GraduationCap, Instagram, Linkedin, Mail, MapPin, Phone, Trophy } from "lucide-react";
 import HeroImage from "@/Image/HeroImage-Photoroom.png";
 import { ContactForm } from "@/components/contact-form";
+import { ContactTowMotion } from "@/components/contact-tow-motion";
 import { ExperienceMotion } from "@/components/experience-motion";
 import { HeroIntroMotion } from "@/components/hero-intro-motion";
 import { HeroNav } from "@/components/hero-nav";
@@ -213,7 +214,7 @@ export default async function HomePage() {
       </section>
 
       <section className="border-t border-border bg-surface px-4 py-16 sm:px-6 lg:px-8" id="contact">
-        <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.78fr_1fr]">
+        <ContactTowMotion className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.78fr_1fr]">
           <div>
             <SectionHeading eyebrow="Contact" title="Let's talk about the next product to ship." text="Have a role, project, or collaboration in mind? Send a quick note and I'll get back to you soon." />
             <div className="mt-8 space-y-3 text-sm font-bold text-ink">
@@ -231,10 +232,10 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
-          <div className="rounded-md border border-border bg-background p-6 shadow-sm">
+          <div className="contact-tow-card rounded-md border border-border bg-background p-6 shadow-sm">
             <ContactForm />
           </div>
-        </div>
+        </ContactTowMotion>
       </section>
     </main>
   );

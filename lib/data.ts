@@ -41,7 +41,8 @@ function fallbackProjectBySlug(slug: string) {
 }
 
 function databaseFallback<T>(context: string, error: unknown, data: T): T {
-  console.warn(`Using fallback ${context} data because the database could not be loaded:`, error);
+  const message = error instanceof Error ? error.message : String(error);
+  console.warn(`Using fallback ${context} data because the database could not be loaded: ${message}`);
   return data;
 }
 

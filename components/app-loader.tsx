@@ -26,13 +26,8 @@ export function AppLoader() {
         const chars = gsap.utils.toArray<HTMLElement>(".laptop-loader-char");
         const lineOneChars = gsap.utils.toArray<HTMLElement>(".laptop-loader-line-1 .laptop-loader-char");
         const lineTwoChars = gsap.utils.toArray<HTMLElement>(".laptop-loader-line-2 .laptop-loader-char");
-        const caretOne = scope.current?.querySelector<HTMLElement>(".laptop-loader-line-1 .laptop-loader-caret");
-        const caretTwo = scope.current?.querySelector<HTMLElement>(".laptop-loader-line-2 .laptop-loader-caret");
-
-        if (!caretOne || !caretTwo) return;
 
         gsap.set(chars, { opacity: 0.28, y: 0 });
-        gsap.set([caretOne, caretTwo], { opacity: 0 });
         gsap.fromTo(
           ".laptop-loader",
           { y: 18, opacity: 0, scale: 0.96 },
@@ -48,18 +43,12 @@ export function AppLoader() {
 
         const typing = gsap.timeline({ repeat: -1, repeatDelay: 0.65 });
         typing
-          .set(caretOne, { opacity: 1 })
-          .to(caretOne, { opacity: 0.2, duration: 0.16, yoyo: true, repeat: 1 }, "<")
           .to(lineOneChars, { opacity: 1, y: -1, duration: 0.035, stagger: 0.045, ease: "none" })
           .to(lineOneChars, { opacity: 0.7, y: 0, duration: 0.18, stagger: 0.012 }, "-=0.16")
-          .set(caretOne, { opacity: 0 })
-          .set(caretTwo, { opacity: 1 })
-          .to(caretTwo, { opacity: 0.2, duration: 0.16, yoyo: true, repeat: 1 }, "<")
           .to(lineTwoChars, { opacity: 1, y: -1, duration: 0.035, stagger: 0.045, ease: "none" })
           .to(lineTwoChars, { opacity: 0.7, y: 0, duration: 0.18, stagger: 0.012 }, "-=0.16")
           .to(chars, { opacity: 1, duration: 0.18, yoyo: true, repeat: 1, delay: 0.18 })
-          .to(chars, { opacity: 0.45, duration: 0.22 })
-          .set([caretOne, caretTwo], { opacity: 0 });
+          .to(chars, { opacity: 0.45, duration: 0.22 });
 
         const keyTweens = keys.map((key, index) =>
           gsap.timeline({ repeat: -1, repeatDelay: 0.25 + ((index * 7) % 9) * 0.035, delay: (index % 11) * 0.045 })
@@ -105,8 +94,8 @@ export function AppLoader() {
           </div>
           <div className="laptop-loader-code">
             <span className="laptop-loader-prompt">~/rohit.dev</span>
-            <span className="laptop-loader-line laptop-loader-line-1">{renderCodeLine(codeLines[0], 0)}<span className="laptop-loader-caret" /></span>
-            <span className="laptop-loader-line laptop-loader-line-2">{renderCodeLine(codeLines[1], 1)}<span className="laptop-loader-caret" /></span>
+            <span className="laptop-loader-line laptop-loader-line-1">{renderCodeLine(codeLines[0], 0)}</span>
+            <span className="laptop-loader-line laptop-loader-line-2">{renderCodeLine(codeLines[1], 1)}</span>
           </div>
         </div>
         <div className="laptop-loader-hinge" />
