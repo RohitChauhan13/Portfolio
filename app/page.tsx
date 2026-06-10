@@ -106,7 +106,7 @@ export default async function HomePage() {
       <section className="px-4 py-16 sm:px-6 lg:px-8" id="work">
         <div className="mx-auto w-full max-w-7xl">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <SectionHeading eyebrow="Selected work" title="Production-first projects with real business outcomes." text="All projects are visible here in one smooth horizontal rail. Open any card for the full case study." />
+            <SectionHeading eyebrow="Selected work" title="Production-first projects with real business outcomes." text="Move through a cinematic project stage with depth, motion, and direct access to each case study." />
             <Link className="focus-ring inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 text-sm font-black text-primary transition hover:border-primary" href="/projects">
               View all
               <ArrowRight size={16} />
