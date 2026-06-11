@@ -289,6 +289,8 @@ function TechStackRow({ techStack }: { techStack: string[] }) {
     if (!row || !measure) return;
 
     function updateVisibleCount() {
+      if (!row || !measure) return;
+
       const availableWidth = row.clientWidth;
       const chips = Array.from(measure.children) as HTMLElement[];
       const gap = Number.parseFloat(window.getComputedStyle(measure).columnGap || "0");
