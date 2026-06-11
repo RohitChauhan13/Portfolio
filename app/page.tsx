@@ -46,11 +46,11 @@ export default async function HomePage() {
     .map((item) =>
       item.id === "one-year-production"
         ? {
-            ...item,
-            title: `${experienceYearsLabel} ${experienceUnit} of professional product work`,
-            description: `Completed ${experienceYearsLabel} ${experienceUnit} of hands-on React Native and full-stack development from ${PROFESSIONAL_EXPERIENCE_START_LABEL}.`,
-            date: new Date().getUTCFullYear().toString()
-          }
+          ...item,
+          title: `${experienceYearsLabel} ${experienceUnit} of professional product work`,
+          description: `Completed ${experienceYearsLabel} ${experienceUnit} of hands-on React Native and full-stack development from ${PROFESSIONAL_EXPERIENCE_START_LABEL}.`,
+          date: new Date().getUTCFullYear().toString()
+        }
         : item
     );
 
